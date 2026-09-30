@@ -1,0 +1,27 @@
+{
+  "external_asset_refs": [],
+  "health_first_probe_ms": 19.8,
+  "local_assets": {
+    "/assets/index-BqL4BQrM.css": {
+      "bytes": 22896,
+      "content_type": "text/css",
+      "elapsed_ms": 1.9
+    },
+    "/assets/index-CqBsT3pC.js": {
+      "bytes": 246513,
+      "content_type": "text/javascript",
+      "elapsed_ms": 3.1
+    },
+    "/assets/source-sans-3.woff2": {
+      "bytes": 28740,
+      "content_type": "text/plain",
+      "elapsed_ms": 1.7
+    },
+    "/assets/window.svg": {
+      "bytes": 535,
+      "content_type": "image/svg+xml",
+      "elapsed_ms": 1.5
+    }
+  },
+  "network_mode_required": "none"
+}

@@ -1,0 +1,10 @@
+{
+  "api_check_functions": 9,
+  "stage1_import": "pass",
+  "stage2_import": "pass",
+  "stage3_import": "pass",
+  "request_count": 247,
+  "max_request_ms": 31.6,
+  "control_count": 67,
+  "max_control_ms": 69.1
+}

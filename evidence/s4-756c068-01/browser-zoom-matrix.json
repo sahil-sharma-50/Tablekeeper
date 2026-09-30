@@ -1,0 +1,331 @@
+﻿{
+    "exact_source_sha":  "756c068eb1fc59319385f98071112e768383aa8a",
+    "browser":  {
+                    "version":  "151.0.7922.34",
+                    "requested_zoom":  2,
+                    "verified_tab_zoom":  2,
+                    "post_scenario_tab_zoom":  2,
+                    "dpr":  2
+                },
+    "functional":  {
+                       "scenario_ok":  false,
+                       "anonymous_status":  401,
+                       "diner_status":  403,
+                       "diner_controls_hidden":  true,
+                       "public_role_picker_absent":  true,
+                       "stale_plan_status":  409,
+                       "stale_plan_feedback":  {
+                                                   "role":  "alert",
+                                                   "focused":  true,
+                                                   "in_viewport":  true,
+                                                   "sticky_header_bottom":  65,
+                                                   "bounds":  [
+                                                                  54,
+                                                                  195,
+                                                                  532,
+                                                                  60
+                                                              ]
+                                               },
+                       "assignment_keys":  [
+                                               "reference",
+                                               "table_ids",
+                                               "changed"
+                                           ],
+                       "preview_does_not_invent_before_assignment":  true,
+                       "committed_preview_retry_keeps_body_and_key":  true,
+                       "apply_retry_keeps_body_and_key":  true,
+                       "lookup_shows_applied_assignment":  true,
+                       "accepted_terms_preserved":  true,
+                       "private_history_terms_owner_privacy_404":  {
+                                                                       "anonymous":  [
+                                                                                         404,
+                                                                                         404,
+                                                                                         404
+                                                                                     ],
+                                                                       "otherOwner":  [
+                                                                                          404,
+                                                                                          404,
+                                                                                          404
+                                                                                      ]
+                                                                   },
+                       "series_dates_and_current_tables_visible":  true,
+                       "series_exception_visible":  true,
+                       "one_click_cancel_removes_action":  true,
+                       "amendment_retry_keeps_body_and_key":  true,
+                       "cancelled_and_changed_states_visible":  true,
+                       "keyboard_focus":  [
+                                              {
+                                                  "theme":  "light",
+                                                  "id":  "replan-from",
+                                                  "visible":  true
+                                              },
+                                              {
+                                                  "theme":  "dark",
+                                                  "id":  "replan-from",
+                                                  "visible":  true
+                                              }
+                                          ],
+                       "source_sans_3_loaded":  true,
+                       "external_origins":  [
+
+                                            ]
+                   },
+    "native_zoom_layout":  {
+                               "sample_count":  16,
+                               "no_overflow_count":  12,
+                               "overflow_count":  4,
+                               "recurrence_text_clipped_count":  0,
+                               "matrix":  [
+                                              {
+                                                  "view":  "replan 375x812 light",
+                                                  "native_zoom":  2,
+                                                  "css_viewport":  [
+                                                                       187,
+                                                                       406
+                                                                   ],
+                                                  "device_pixel_ratio":  2,
+                                                  "theme":  "light",
+                                                  "document_client_width":  187,
+                                                  "document_scroll_width":  339,
+                                                  "horizontal_overflow":  true
+                                              },
+                                              {
+                                                  "view":  "replan 768x1024 light",
+                                                  "native_zoom":  2,
+                                                  "css_viewport":  [
+                                                                       384,
+                                                                       512
+                                                                   ],
+                                                  "device_pixel_ratio":  2,
+                                                  "theme":  "light",
+                                                  "document_client_width":  384,
+                                                  "document_scroll_width":  384,
+                                                  "horizontal_overflow":  false
+                                              },
+                                              {
+                                                  "view":  "replan 1280x720 light",
+                                                  "native_zoom":  2,
+                                                  "css_viewport":  [
+                                                                       640,
+                                                                       360
+                                                                   ],
+                                                  "device_pixel_ratio":  2,
+                                                  "theme":  "light",
+                                                  "document_client_width":  640,
+                                                  "document_scroll_width":  640,
+                                                  "horizontal_overflow":  false
+                                              },
+                                              {
+                                                  "view":  "replan 1440x900 light",
+                                                  "native_zoom":  2,
+                                                  "css_viewport":  [
+                                                                       720,
+                                                                       450
+                                                                   ],
+                                                  "device_pixel_ratio":  2,
+                                                  "theme":  "light",
+                                                  "document_client_width":  720,
+                                                  "document_scroll_width":  720,
+                                                  "horizontal_overflow":  false
+                                              },
+                                              {
+                                                  "view":  "series 375x812 light",
+                                                  "native_zoom":  2,
+                                                  "css_viewport":  [
+                                                                       187,
+                                                                       406
+                                                                   ],
+                                                  "device_pixel_ratio":  2,
+                                                  "theme":  "light",
+                                                  "document_client_width":  187,
+                                                  "document_scroll_width":  339,
+                                                  "horizontal_overflow":  true
+                                              },
+                                              {
+                                                  "view":  "series 768x1024 light",
+                                                  "native_zoom":  2,
+                                                  "css_viewport":  [
+                                                                       384,
+                                                                       512
+                                                                   ],
+                                                  "device_pixel_ratio":  2,
+                                                  "theme":  "light",
+                                                  "document_client_width":  384,
+                                                  "document_scroll_width":  384,
+                                                  "horizontal_overflow":  false
+                                              },
+                                              {
+                                                  "view":  "series 1280x720 light",
+                                                  "native_zoom":  2,
+                                                  "css_viewport":  [
+                                                                       640,
+                                                                       360
+                                                                   ],
+                                                  "device_pixel_ratio":  2,
+                                                  "theme":  "light",
+                                                  "document_client_width":  640,
+                                                  "document_scroll_width":  640,
+                                                  "horizontal_overflow":  false
+                                              },
+                                              {
+                                                  "view":  "series 1440x900 light",
+                                                  "native_zoom":  2,
+                                                  "css_viewport":  [
+                                                                       720,
+                                                                       450
+                                                                   ],
+                                                  "device_pixel_ratio":  2,
+                                                  "theme":  "light",
+                                                  "document_client_width":  720,
+                                                  "document_scroll_width":  720,
+                                                  "horizontal_overflow":  false
+                                              },
+                                              {
+                                                  "view":  "replan 375x812 dark",
+                                                  "native_zoom":  2,
+                                                  "css_viewport":  [
+                                                                       187,
+                                                                       406
+                                                                   ],
+                                                  "device_pixel_ratio":  2,
+                                                  "theme":  "dark",
+                                                  "document_client_width":  187,
+                                                  "document_scroll_width":  345,
+                                                  "horizontal_overflow":  true
+                                              },
+                                              {
+                                                  "view":  "replan 768x1024 dark",
+                                                  "native_zoom":  2,
+                                                  "css_viewport":  [
+                                                                       384,
+                                                                       512
+                                                                   ],
+                                                  "device_pixel_ratio":  2,
+                                                  "theme":  "dark",
+                                                  "document_client_width":  384,
+                                                  "document_scroll_width":  384,
+                                                  "horizontal_overflow":  false
+                                              },
+                                              {
+                                                  "view":  "replan 1280x720 dark",
+                                                  "native_zoom":  2,
+                                                  "css_viewport":  [
+                                                                       640,
+                                                                       360
+                                                                   ],
+                                                  "device_pixel_ratio":  2,
+                                                  "theme":  "dark",
+                                                  "document_client_width":  640,
+                                                  "document_scroll_width":  640,
+                                                  "horizontal_overflow":  false
+                                              },
+                                              {
+                                                  "view":  "replan 1440x900 dark",
+                                                  "native_zoom":  2,
+                                                  "css_viewport":  [
+                                                                       720,
+                                                                       450
+                                                                   ],
+                                                  "device_pixel_ratio":  2,
+                                                  "theme":  "dark",
+                                                  "document_client_width":  720,
+                                                  "document_scroll_width":  720,
+                                                  "horizontal_overflow":  false
+                                              },
+                                              {
+                                                  "view":  "series 375x812 dark",
+                                                  "native_zoom":  2,
+                                                  "css_viewport":  [
+                                                                       187,
+                                                                       406
+                                                                   ],
+                                                  "device_pixel_ratio":  2,
+                                                  "theme":  "dark",
+                                                  "document_client_width":  187,
+                                                  "document_scroll_width":  345,
+                                                  "horizontal_overflow":  true
+                                              },
+                                              {
+                                                  "view":  "series 768x1024 dark",
+                                                  "native_zoom":  2,
+                                                  "css_viewport":  [
+                                                                       384,
+                                                                       512
+                                                                   ],
+                                                  "device_pixel_ratio":  2,
+                                                  "theme":  "dark",
+                                                  "document_client_width":  384,
+                                                  "document_scroll_width":  384,
+                                                  "horizontal_overflow":  false
+                                              },
+                                              {
+                                                  "view":  "series 1280x720 dark",
+                                                  "native_zoom":  2,
+                                                  "css_viewport":  [
+                                                                       640,
+                                                                       360
+                                                                   ],
+                                                  "device_pixel_ratio":  2,
+                                                  "theme":  "dark",
+                                                  "document_client_width":  640,
+                                                  "document_scroll_width":  640,
+                                                  "horizontal_overflow":  false
+                                              },
+                                              {
+                                                  "view":  "series 1440x900 dark",
+                                                  "native_zoom":  2,
+                                                  "css_viewport":  [
+                                                                       720,
+                                                                       450
+                                                                   ],
+                                                  "device_pixel_ratio":  2,
+                                                  "theme":  "dark",
+                                                  "document_client_width":  720,
+                                                  "document_scroll_width":  720,
+                                                  "horizontal_overflow":  false
+                                              }
+                                          ],
+                               "failures":  [
+                                                {
+                                                    "view":  "replan 375x812 light",
+                                                    "css_viewport":  [
+                                                                         187,
+                                                                         406
+                                                                     ],
+                                                    "document_client":  187,
+                                                    "document_scroll":  339,
+                                                    "clipped_occurrence_text_count":  0
+                                                },
+                                                {
+                                                    "view":  "series 375x812 light",
+                                                    "css_viewport":  [
+                                                                         187,
+                                                                         406
+                                                                     ],
+                                                    "document_client":  187,
+                                                    "document_scroll":  339,
+                                                    "clipped_occurrence_text_count":  0
+                                                },
+                                                {
+                                                    "view":  "replan 375x812 dark",
+                                                    "css_viewport":  [
+                                                                         187,
+                                                                         406
+                                                                     ],
+                                                    "document_client":  187,
+                                                    "document_scroll":  345,
+                                                    "clipped_occurrence_text_count":  0
+                                                },
+                                                {
+                                                    "view":  "series 375x812 dark",
+                                                    "css_viewport":  [
+                                                                         187,
+                                                                         406
+                                                                     ],
+                                                    "document_client":  187,
+                                                    "document_scroll":  345,
+                                                    "clipped_occurrence_text_count":  0
+                                                }
+                                            ]
+                           }
+}

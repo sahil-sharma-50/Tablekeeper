@@ -1,0 +1,14 @@
+PASS Stage 4 replan auth, key, offset, interval and unknown-resource guards
+PASS Stage 4 manager repair succeeds inside the accepted cancellation cutoff
+PASS Stage 4 oracle-matched preview/apply, cutoff bypass, atomic history, closure and exact replay
+PASS Stage 4 no-feasible atomicity, failed-key reuse, stale-plan rejection and concurrent apply
+PASS Stage 4 maximum 6-table/4-pair/6-booking input and unchanged out-of-interval booking
+PASS Stage 4 series amendment preserves identities/dates/tables and skips exceptions/cancellations
+PASS Stage 4 series strict types, privacy, stale-before-cutoff and same-revision concurrency
+PASS Stage 4 no-op/empty revisions, atomic rollback and failed-key reuse
+PASS Stage 4 earlier non-occupancy cutoff error takes precedence over later occupancy conflict
+PASS populated Stage 1 import retains session and exact create/move receipts; imported booking adopts
+PASS populated Stage 2 pair import retains session, pair-upgrade receipt, and supports adoption
+PASS populated Stage 3 import retains session, series states, histories and create/move/cancel receipts
+TIMING requests=247 max_request_ms=31.6 controls=67 max_control_ms=69.1
+PASS independent Stage 4 API checks
