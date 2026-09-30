@@ -1,5 +1,6 @@
 import React, { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
+import { clearSupersededRejection } from "./booking-attempt";
 import "./styles.css";
 
 type RestaurantSummary = { id: string; name: string; timezone: string };
@@ -189,7 +190,10 @@ function HomePage({ signedIn }: { signedIn: boolean }) {
     const draft = { restaurantId, date, party, bookingParty, selected };
     sessionStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
   }, [restaurantId, date, party, bookingParty, selected]);
-  useEffect(() => { if (attempt) sessionStorage.setItem(ATTEMPT_KEY, JSON.stringify(attempt)); }, [attempt]);
+  useEffect(() => {
+    if (attempt) sessionStorage.setItem(ATTEMPT_KEY, JSON.stringify(attempt));
+    else sessionStorage.removeItem(ATTEMPT_KEY);
+  }, [attempt]);
 
   const options = useMemo(() => {
     if (!restaurant) return [] as { ids: string[]; label: string; capacity: number }[];
@@ -202,6 +206,20 @@ function HomePage({ signedIn }: { signedIn: boolean }) {
     return [...singles, ...pairs];
   }, [restaurant]);
 
+  const bookingBodyFor = (next: Selected | null, partySize = bookingParty) => {
+    if (!next || !restaurant) return null;
+    return {
+      restaurant_id: restaurant.id,
+      ...(next.tableIds.length === 1 ? { table_id: next.tableIds[0] } : { table_ids: next.tableIds }),
+      starts_at_local: next.startsAtLocal,
+      party_size: Number(partySize),
+    };
+  };
+  const clearStaleRejection = (next: Selected | null, partySize = bookingParty) => {
+    const nextBody = bookingBodyFor(next, partySize);
+    setAttempt((previous) => clearSupersededRejection(previous, nextBody));
+  };
+
   const runSearch = async (event?: FormEvent, clearSelection = true, force = false) => {
     event?.preventDefault();
     if (!restaurant || !date || party < 1 || (!force && (attempt?.status === "uncertain" || attempt?.status === "sending"))) return;
@@ -209,7 +227,7 @@ function HomePage({ signedIn }: { signedIn: boolean }) {
     setSearching(true);
     setSearchError("");
     setAvailability(null);
-    if (clearSelection) { setSelected(null); setAuthError(false); }
+    if (clearSelection) { setSelected(null); setAuthError(false); clearStaleRejection(null); }
     try {
       const query = new URLSearchParams({ restaurant_id: restaurant.id, date, party_size: String(party) });
       const result = await api<Availability>(`/availability?${query}`);
@@ -221,10 +239,11 @@ function HomePage({ signedIn }: { signedIn: boolean }) {
     }
   };
 
-  const setSearchField = () => { searchSequence.current += 1; setAvailability(null); setSearchError(""); };
+  const setSearchField = () => { searchSequence.current += 1; setAvailability(null); setSearchError(""); clearStaleRejection(null); };
   const refreshAvailability = () => runSearch(undefined, false, true);
   const choose = (value: Selected) => {
     if (attempt?.status === "uncertain" || attempt?.status === "sending") return;
+    clearStaleRejection(value, party);
     setSelected(value);
     setBookingParty(party);
     setAuthError(!signedIn);
@@ -237,12 +256,7 @@ function HomePage({ signedIn }: { signedIn: boolean }) {
   };
 
   const selectedOption = selected && options.find((option) => option.ids.join("+") === selected.tableIds.join("+"));
-  const currentBody = selected && restaurant ? {
-    restaurant_id: restaurant.id,
-    ...(selected.tableIds.length === 1 ? { table_id: selected.tableIds[0] } : { table_ids: selected.tableIds }),
-    starts_at_local: selected.startsAtLocal,
-    party_size: Number(bookingParty),
-  } : null;
+  const currentBody = bookingBodyFor(selected);
 
   const book = async () => {
     if (!selected || !restaurant || !currentBody) return;
@@ -339,7 +353,7 @@ function HomePage({ signedIn }: { signedIn: boolean }) {
       {selected ? <>
         <form data-testid="booking-form" onSubmit={(event) => { event.preventDefault(); attempt?.status === "uncertain" ? useRestoredBooking() : book(); }}>
           <p className="selected-summary" data-testid="booking-summary"><strong>{restaurants.find((item) => item.id === restaurantId)?.name || "Your restaurant"}</strong><span>{shortDate(selected.startsAtLocal.slice(0, 10))} · {selected.startsAtLocal.slice(11, 16)}</span><span>{selectedOption?.label || tableLabel(selected.tableIds, restaurant)}</span></p>
-          <label className="booking-party-field">Party size<input data-testid="booking-party-size" type="number" min="1" step="1" value={bookingParty} disabled={locked} onChange={(event) => setBookingParty(Number(event.target.value))} required /></label>
+          <label className="booking-party-field">Party size<input data-testid="booking-party-size" type="number" min="1" step="1" value={bookingParty} disabled={locked} onChange={(event) => { const value = Number(event.target.value); clearStaleRejection(selected, value); setBookingParty(value); }} required /></label>
           {!signedIn && <><a className="button button-outline sign-in-action" href="/login?next=%2F">Sign in</a>{authError && <p id="auth-error" className="message message-error auth-panel-error" role="alert" tabIndex={-1} data-testid="auth-error">Please sign in before completing your reservation. Your table selection is saved.</p>}</>}
           {restoreError && <p className="message message-error" role="alert">{restoreError}</p>}
           {attempt?.status === "uncertain" && <p className="message message-warning" role="status" data-testid="booking-uncertain">{attempt.message}</p>}
@@ -358,6 +372,8 @@ function AuthPage({ mode }: { mode: "login" | "signup" }) {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
+  const errorRef = useRef<HTMLParagraphElement>(null);
+  useEffect(() => { if (error) errorRef.current?.focus(); }, [error]);
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError("");
@@ -384,7 +400,7 @@ function AuthPage({ mode }: { mode: "login" | "signup" }) {
         <label>Email address<input name="email" type="email" autoComplete="email" data-testid={signup ? "signup-email" : "login-email"} required /></label>
         <label>Password<input name="password" type="password" autoComplete={signup ? "new-password" : "current-password"} minLength={signup ? 8 : undefined} data-testid={signup ? "signup-password" : "login-password"} required /></label>
         <button className="button button-primary auth-submit" data-testid={signup ? "signup-submit" : "login-submit"} type="submit" disabled={busy}>{busy ? "Please wait…" : signup ? "Create account" : "Sign in"}<span aria-hidden="true">↗</span></button>
-        {error && <p className="message message-error" role="alert" data-testid="auth-error">{error}</p>}
+        {error && <p ref={errorRef} className="message message-error auth-feedback" role="alert" tabIndex={-1} data-testid="auth-error">{error}</p>}
         {notice && <p className="message message-success" role="status">{notice}</p>}
       </form>
       <p className="auth-switch">{signup ? "Already have an account?" : "New to Tablekeeper?"} <a href={signup ? "/login" : "/signup"}>{signup ? "Sign in" : "Create an account"}</a></p>
