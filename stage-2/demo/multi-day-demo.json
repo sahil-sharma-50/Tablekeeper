@@ -1,0 +1,29 @@
+{
+  "users": [],
+  "restaurants": [
+    {
+      "id": "r_demo_week",
+      "name": "DEMO: Weeklong Tablehouse",
+      "timezone": "Europe/Berlin",
+      "slot_minutes": 30,
+      "reservation_duration_minutes": 90,
+      "cancellation_cutoff_minutes": 120,
+      "opening_hours": [
+        { "weekday": "mon", "opens": "17:00", "closes": "22:00" },
+        { "weekday": "tue", "opens": "17:00", "closes": "22:00" },
+        { "weekday": "wed", "opens": "17:00", "closes": "22:00" },
+        { "weekday": "thu", "opens": "17:00", "closes": "22:00" },
+        { "weekday": "fri", "opens": "17:00", "closes": "22:00" },
+        { "weekday": "sat", "opens": "17:00", "closes": "22:00" },
+        { "weekday": "sun", "opens": "17:00", "closes": "22:00" }
+      ],
+      "tables": [
+        { "id": "demo_two", "label": "Table 1", "capacity": 2 },
+        { "id": "demo_four", "label": "Table 2", "capacity": 4 },
+        { "id": "demo_six", "label": "Table 3", "capacity": 6 }
+      ],
+      "combinable": [["demo_two", "demo_four"]]
+    }
+  ],
+  "reservations": []
+}
