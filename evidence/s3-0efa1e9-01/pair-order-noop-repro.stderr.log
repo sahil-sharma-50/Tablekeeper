@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "C:\Users\sahil\Desktop\BAND - Dark Factory\submission\tablekeeper-v4\checks\stage3_pair_noop_repro.py", line 9, in <module>
+    check_combined_table_history(parser.parse_args().base_url)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sahil\Desktop\BAND - Dark Factory\submission\tablekeeper-v4\checks\stage3_independent.py", line 644, in check_combined_table_history
+    assert not noop_failures, "reversed input for the same declared pair changed the reservation: " + ", ".join(noop_failures)
+           ^^^^^^^^^^^^^^^^^
+AssertionError: reversed input for the same declared pair changed the reservation: revision 2 -> 3, history entries 2 -> 3

@@ -1,0 +1,9 @@
+{
+  "independent_check_functions": 7,
+  "stage1_import": "pass",
+  "stage2_import": "pass",
+  "request_count": 240,
+  "max_request_ms": 61.4,
+  "control_count": 38,
+  "max_control_ms": 306.8
+}
