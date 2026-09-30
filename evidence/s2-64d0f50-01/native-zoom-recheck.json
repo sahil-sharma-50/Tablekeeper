@@ -1,0 +1,2101 @@
+{
+  "source_sha": "64d0f501f733f773c3357092c6ea5676b90512d0",
+  "parent_sha": "d3ee94018d6dca65f23d0361139c741253d86b28",
+  "accepted_backend_ancestor": "afdb3dc0a0eeca44583fe456186618de78525aca",
+  "created_utc": "2026-09-30 18:10:11 UTC",
+  "container_image": "sha256:3454d6cb9cd4438a6b2fbbd6660e3738c3a7048868ccc789d6f22e628e134de7",
+  "method": "Playwright persistent Chromium profile, isolated temporary MV3 extension, chrome.tabs.setZoom(tabId, 2) followed by chrome.tabs.getZoom(tabId). No CSS zoom, deviceScaleFactor, or proxy viewport scaling.",
+  "browser": {
+    "chromium_version": "151.0.7922.34",
+    "mode": "headless Chromium with extension support",
+    "requested_and_verified_tab_zoom": 2
+  },
+  "fixture": "Opt-in Stage 2 demo fixture loaded only into the disposable QA container; new QA account used only there. No account values, tokens, or exports retained.",
+  "summary": {
+    "cases": 24,
+    "passed": 24,
+    "failed": 0,
+    "outer_window_sizes_px": [
+      [
+        1280,
+        720
+      ],
+      [
+        1366,
+        768
+      ],
+      [
+        1440,
+        900
+      ]
+    ],
+    "css_viewports_at_native_200_percent_px": [
+      [
+        640,
+        360
+      ],
+      [
+        683,
+        384
+      ],
+      [
+        720,
+        450
+      ]
+    ],
+    "device_pixel_ratio": 2,
+    "themes": [
+      "light",
+      "dark"
+    ],
+    "horizontal_page_overflow_cases": 0,
+    "visible_feedback_cases": 24,
+    "focused_login_signup_alerts": 12,
+    "reserve_feedback_cases_with_enabled_action_linked_alert_and_visible_panel": 6,
+    "lookup_feedback_cases_visible_with_action": 6,
+    "main_art_loaded_cases": 24,
+    "reserve_alert_focus_note": "The alert itself was not focused in the six reserve cases. The panel was scrolled into view; the alert was visible immediately below Sign in, below the sticky header, role=alert, and aria-describedby from the enabled Reserve action, satisfying the specification focus-or-scroll requirement."
+  },
+  "cases": [
+    {
+      "scenario": "login-error-401",
+      "outerViewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "theme": "light",
+      "actualTabZoom": 2,
+      "cssViewport": [
+        640,
+        360
+      ],
+      "windowOuter": [
+        1280,
+        720
+      ],
+      "devicePixelRatio": 2,
+      "document": {
+        "client": [
+          640,
+          360
+        ],
+        "scroll": [
+          640,
+          1101
+        ],
+        "horizontalOverflow": false
+      },
+      "themeApplied": true,
+      "stickyHeaderBottom": 65,
+      "alert": {
+        "role": "alert",
+        "bounds": {
+          "x": 35,
+          "y": 225.8671875,
+          "width": 570,
+          "height": 40.59375,
+          "bottom": 266.4609375
+        },
+        "visibleInViewport": true,
+        "belowHeader": true,
+        "focused": true
+      },
+      "artwork": {
+        "alt": "A warmly lit restaurant ready for guests",
+        "loaded": true,
+        "naturalSize": [
+          1254,
+          1254
+        ],
+        "objectFit": "contain",
+        "bounds": {
+          "x": 170,
+          "y": -573.5,
+          "width": 300,
+          "height": 300
+        }
+      },
+      "relatedActions": {
+        "reserveEnabled": null,
+        "reserveDescribedByAlert": null,
+        "signInAction": null,
+        "alertInsideReservationPanel": false,
+        "alertImmediatelyBelowSignIn": false,
+        "lookupAction": null
+      },
+      "focusTarget": {
+        "tag": "P",
+        "testId": "auth-error",
+        "bounds": {
+          "x": 35,
+          "y": 225.8671875,
+          "width": 570,
+          "height": 40.59375
+        },
+        "visibleInViewport": true
+      },
+      "pageScrollY": 654.5,
+      "outcome": "auth-error-focused",
+      "specCriteriaMet": true
+    },
+    {
+      "scenario": "signup-error-409",
+      "outerViewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "theme": "light",
+      "actualTabZoom": 2,
+      "cssViewport": [
+        640,
+        360
+      ],
+      "windowOuter": [
+        1280,
+        720
+      ],
+      "devicePixelRatio": 2,
+      "document": {
+        "client": [
+          640,
+          360
+        ],
+        "scroll": [
+          640,
+          1181
+        ],
+        "horizontalOverflow": false
+      },
+      "themeApplied": true,
+      "stickyHeaderBottom": 65,
+      "alert": {
+        "role": "alert",
+        "bounds": {
+          "x": 35,
+          "y": 226.3671875,
+          "width": 570,
+          "height": 40.59375,
+          "bottom": 266.9609375
+        },
+        "visibleInViewport": true,
+        "belowHeader": true,
+        "focused": true
+      },
+      "artwork": {
+        "alt": "A table being prepared for a shared meal",
+        "loaded": true,
+        "naturalSize": [
+          1254,
+          1254
+        ],
+        "objectFit": "contain",
+        "bounds": {
+          "x": 170,
+          "y": -652.5,
+          "width": 300,
+          "height": 300
+        }
+      },
+      "relatedActions": {
+        "reserveEnabled": null,
+        "reserveDescribedByAlert": null,
+        "signInAction": null,
+        "alertInsideReservationPanel": false,
+        "alertImmediatelyBelowSignIn": false,
+        "lookupAction": null
+      },
+      "focusTarget": {
+        "tag": "P",
+        "testId": "auth-error",
+        "bounds": {
+          "x": 35,
+          "y": 226.3671875,
+          "width": 570,
+          "height": 40.59375
+        },
+        "visibleInViewport": true
+      },
+      "pageScrollY": 733.5,
+      "outcome": "auth-error-focused",
+      "specCriteriaMet": true
+    },
+    {
+      "scenario": "home-reserve-unauth-enabled",
+      "outerViewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "theme": "light",
+      "actualTabZoom": 2,
+      "cssViewport": [
+        640,
+        360
+      ],
+      "windowOuter": [
+        1280,
+        720
+      ],
+      "devicePixelRatio": 2,
+      "document": {
+        "client": [
+          640,
+          360
+        ],
+        "scroll": [
+          640,
+          1796
+        ],
+        "horizontalOverflow": false
+      },
+      "themeApplied": true,
+      "stickyHeaderBottom": 65,
+      "alert": {
+        "role": "alert",
+        "bounds": {
+          "x": 35,
+          "y": 239.4921875,
+          "width": 570,
+          "height": 40.59375,
+          "bottom": 280.0859375
+        },
+        "visibleInViewport": true,
+        "belowHeader": true,
+        "focused": false
+      },
+      "artwork": {
+        "alt": "A welcoming restaurant table set for dinner",
+        "loaded": true,
+        "naturalSize": [
+          1122,
+          1402
+        ],
+        "objectFit": "contain",
+        "bounds": {
+          "x": 391.75,
+          "y": -1154.6171875,
+          "width": 215.25,
+          "height": 165
+        }
+      },
+      "relatedActions": {
+        "reserveEnabled": true,
+        "reserveDescribedByAlert": true,
+        "signInAction": {
+          "bounds": {
+            "x": 35,
+            "y": 179.4921875,
+            "width": 570,
+            "height": 42
+          },
+          "visibleInViewport": true
+        },
+        "alertInsideReservationPanel": true,
+        "alertImmediatelyBelowSignIn": true,
+        "lookupAction": null
+      },
+      "focusTarget": {
+        "tag": "BUTTON",
+        "testId": "booking-submit",
+        "bounds": {
+          "x": 35,
+          "y": 315.4200744628906,
+          "width": 570,
+          "height": 44
+        },
+        "visibleInViewport": true
+      },
+      "pageScrollY": 1264.5,
+      "outcome": "reserve-feedback-visible-linked-and-scrolled",
+      "specCriteriaMet": true
+    },
+    {
+      "scenario": "lookup-unauth-error",
+      "outerViewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "theme": "light",
+      "actualTabZoom": 2,
+      "cssViewport": [
+        640,
+        360
+      ],
+      "windowOuter": [
+        1280,
+        720
+      ],
+      "devicePixelRatio": 2,
+      "document": {
+        "client": [
+          640,
+          360
+        ],
+        "scroll": [
+          640,
+          757
+        ],
+        "horizontalOverflow": false
+      },
+      "themeApplied": true,
+      "stickyHeaderBottom": 65,
+      "alert": {
+        "role": "alert",
+        "bounds": {
+          "x": 35,
+          "y": 220.171875,
+          "width": 570,
+          "height": 40.59375,
+          "bottom": 260.765625
+        },
+        "visibleInViewport": true,
+        "belowHeader": true,
+        "focused": false
+      },
+      "artwork": {
+        "alt": "A restaurant table ready for a meal",
+        "loaded": true,
+        "naturalSize": [
+          1122,
+          1402
+        ],
+        "objectFit": "contain",
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        }
+      },
+      "relatedActions": {
+        "reserveEnabled": null,
+        "reserveDescribedByAlert": null,
+        "signInAction": null,
+        "alertInsideReservationPanel": false,
+        "alertImmediatelyBelowSignIn": false,
+        "lookupAction": {
+          "bounds": {
+            "x": 35,
+            "y": 108.54821014404297,
+            "width": 570,
+            "height": 44.00000762939453
+          },
+          "visibleInViewport": true
+        }
+      },
+      "focusTarget": {
+        "tag": "BUTTON",
+        "testId": "lookup-submit",
+        "bounds": {
+          "x": 35,
+          "y": 108.54821014404297,
+          "width": 570,
+          "height": 44.00000762939453
+        },
+        "visibleInViewport": true
+      },
+      "pageScrollY": 343,
+      "outcome": "lookup-feedback-visible",
+      "specCriteriaMet": true
+    },
+    {
+      "scenario": "login-error-401",
+      "outerViewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "theme": "dark",
+      "actualTabZoom": 2,
+      "cssViewport": [
+        640,
+        360
+      ],
+      "windowOuter": [
+        1280,
+        720
+      ],
+      "devicePixelRatio": 2,
+      "document": {
+        "client": [
+          640,
+          360
+        ],
+        "scroll": [
+          640,
+          1101
+        ],
+        "horizontalOverflow": false
+      },
+      "themeApplied": true,
+      "stickyHeaderBottom": 65,
+      "alert": {
+        "role": "alert",
+        "bounds": {
+          "x": 35,
+          "y": 226.3671875,
+          "width": 570,
+          "height": 40.59375,
+          "bottom": 266.9609375
+        },
+        "visibleInViewport": true,
+        "belowHeader": true,
+        "focused": true
+      },
+      "artwork": {
+        "alt": "A warmly lit restaurant ready for guests",
+        "loaded": true,
+        "naturalSize": [
+          1254,
+          1254
+        ],
+        "objectFit": "contain",
+        "bounds": {
+          "x": 170,
+          "y": -573,
+          "width": 300,
+          "height": 300
+        }
+      },
+      "relatedActions": {
+        "reserveEnabled": null,
+        "reserveDescribedByAlert": null,
+        "signInAction": null,
+        "alertInsideReservationPanel": false,
+        "alertImmediatelyBelowSignIn": false,
+        "lookupAction": null
+      },
+      "focusTarget": {
+        "tag": "P",
+        "testId": "auth-error",
+        "bounds": {
+          "x": 35,
+          "y": 226.3671875,
+          "width": 570,
+          "height": 40.59375
+        },
+        "visibleInViewport": true
+      },
+      "pageScrollY": 654,
+      "outcome": "auth-error-focused",
+      "specCriteriaMet": true
+    },
+    {
+      "scenario": "signup-error-409",
+      "outerViewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "theme": "dark",
+      "actualTabZoom": 2,
+      "cssViewport": [
+        640,
+        360
+      ],
+      "windowOuter": [
+        1280,
+        720
+      ],
+      "devicePixelRatio": 2,
+      "document": {
+        "client": [
+          640,
+          360
+        ],
+        "scroll": [
+          640,
+          1181
+        ],
+        "horizontalOverflow": false
+      },
+      "themeApplied": true,
+      "stickyHeaderBottom": 65,
+      "alert": {
+        "role": "alert",
+        "bounds": {
+          "x": 35,
+          "y": 226.3671875,
+          "width": 570,
+          "height": 40.59375,
+          "bottom": 266.9609375
+        },
+        "visibleInViewport": true,
+        "belowHeader": true,
+        "focused": true
+      },
+      "artwork": {
+        "alt": "A table being prepared for a shared meal",
+        "loaded": true,
+        "naturalSize": [
+          1254,
+          1254
+        ],
+        "objectFit": "contain",
+        "bounds": {
+          "x": 170,
+          "y": -652.5,
+          "width": 300,
+          "height": 300
+        }
+      },
+      "relatedActions": {
+        "reserveEnabled": null,
+        "reserveDescribedByAlert": null,
+        "signInAction": null,
+        "alertInsideReservationPanel": false,
+        "alertImmediatelyBelowSignIn": false,
+        "lookupAction": null
+      },
+      "focusTarget": {
+        "tag": "P",
+        "testId": "auth-error",
+        "bounds": {
+          "x": 35,
+          "y": 226.3671875,
+          "width": 570,
+          "height": 40.59375
+        },
+        "visibleInViewport": true
+      },
+      "pageScrollY": 733.5,
+      "outcome": "auth-error-focused",
+      "specCriteriaMet": true
+    },
+    {
+      "scenario": "home-reserve-unauth-enabled",
+      "outerViewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "theme": "dark",
+      "actualTabZoom": 2,
+      "cssViewport": [
+        640,
+        360
+      ],
+      "windowOuter": [
+        1280,
+        720
+      ],
+      "devicePixelRatio": 2,
+      "document": {
+        "client": [
+          640,
+          360
+        ],
+        "scroll": [
+          640,
+          1796
+        ],
+        "horizontalOverflow": false
+      },
+      "themeApplied": true,
+      "stickyHeaderBottom": 65,
+      "alert": {
+        "role": "alert",
+        "bounds": {
+          "x": 35,
+          "y": 81.4921875,
+          "width": 570,
+          "height": 40.59375,
+          "bottom": 122.0859375
+        },
+        "visibleInViewport": true,
+        "belowHeader": true,
+        "focused": false
+      },
+      "artwork": {
+        "alt": "A welcoming restaurant table set for dinner",
+        "loaded": true,
+        "naturalSize": [
+          1122,
+          1402
+        ],
+        "objectFit": "contain",
+        "bounds": {
+          "x": 391.75,
+          "y": -1312.6171875,
+          "width": 215.25,
+          "height": 165
+        }
+      },
+      "relatedActions": {
+        "reserveEnabled": true,
+        "reserveDescribedByAlert": true,
+        "signInAction": {
+          "bounds": {
+            "x": 35,
+            "y": 21.4921875,
+            "width": 570,
+            "height": 42
+          },
+          "visibleInViewport": true
+        },
+        "alertInsideReservationPanel": true,
+        "alertImmediatelyBelowSignIn": true,
+        "lookupAction": null
+      },
+      "focusTarget": {
+        "tag": "BUTTON",
+        "testId": "booking-submit",
+        "bounds": {
+          "x": 35,
+          "y": 157.727294921875,
+          "width": 570,
+          "height": 44
+        },
+        "visibleInViewport": true
+      },
+      "pageScrollY": 1422.5,
+      "outcome": "reserve-feedback-visible-linked-and-scrolled",
+      "specCriteriaMet": true
+    },
+    {
+      "scenario": "lookup-unauth-error",
+      "outerViewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "theme": "dark",
+      "actualTabZoom": 2,
+      "cssViewport": [
+        640,
+        360
+      ],
+      "windowOuter": [
+        1280,
+        720
+      ],
+      "devicePixelRatio": 2,
+      "document": {
+        "client": [
+          640,
+          360
+        ],
+        "scroll": [
+          640,
+          757
+        ],
+        "horizontalOverflow": false
+      },
+      "themeApplied": true,
+      "stickyHeaderBottom": 65,
+      "alert": {
+        "role": "alert",
+        "bounds": {
+          "x": 35,
+          "y": 220.171875,
+          "width": 570,
+          "height": 40.59375,
+          "bottom": 260.765625
+        },
+        "visibleInViewport": true,
+        "belowHeader": true,
+        "focused": false
+      },
+      "artwork": {
+        "alt": "A restaurant table ready for a meal",
+        "loaded": true,
+        "naturalSize": [
+          1122,
+          1402
+        ],
+        "objectFit": "contain",
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        }
+      },
+      "relatedActions": {
+        "reserveEnabled": null,
+        "reserveDescribedByAlert": null,
+        "signInAction": null,
+        "alertInsideReservationPanel": false,
+        "alertImmediatelyBelowSignIn": false,
+        "lookupAction": {
+          "bounds": {
+            "x": 35,
+            "y": 108.36592102050781,
+            "width": 570,
+            "height": 44
+          },
+          "visibleInViewport": true
+        }
+      },
+      "focusTarget": {
+        "tag": "BUTTON",
+        "testId": "lookup-submit",
+        "bounds": {
+          "x": 35,
+          "y": 108.36592102050781,
+          "width": 570,
+          "height": 44
+        },
+        "visibleInViewport": true
+      },
+      "pageScrollY": 343,
+      "outcome": "lookup-feedback-visible",
+      "specCriteriaMet": true
+    },
+    {
+      "scenario": "login-error-401",
+      "outerViewport": {
+        "width": 1366,
+        "height": 768
+      },
+      "theme": "light",
+      "actualTabZoom": 2,
+      "cssViewport": [
+        683,
+        384
+      ],
+      "windowOuter": [
+        1366,
+        768
+      ],
+      "devicePixelRatio": 2,
+      "document": {
+        "client": [
+          683,
+          384
+        ],
+        "scroll": [
+          683,
+          1101
+        ],
+        "horizontalOverflow": false
+      },
+      "themeApplied": true,
+      "stickyHeaderBottom": 65,
+      "alert": {
+        "role": "alert",
+        "bounds": {
+          "x": 35,
+          "y": 240.8671875,
+          "width": 613,
+          "height": 40.59375,
+          "bottom": 281.4609375
+        },
+        "visibleInViewport": true,
+        "belowHeader": true,
+        "focused": true
+      },
+      "artwork": {
+        "alt": "A warmly lit restaurant ready for guests",
+        "loaded": true,
+        "naturalSize": [
+          1254,
+          1254
+        ],
+        "objectFit": "contain",
+        "bounds": {
+          "x": 191.5,
+          "y": -558.5,
+          "width": 300,
+          "height": 300
+        }
+      },
+      "relatedActions": {
+        "reserveEnabled": null,
+        "reserveDescribedByAlert": null,
+        "signInAction": null,
+        "alertInsideReservationPanel": false,
+        "alertImmediatelyBelowSignIn": false,
+        "lookupAction": null
+      },
+      "focusTarget": {
+        "tag": "P",
+        "testId": "auth-error",
+        "bounds": {
+          "x": 35,
+          "y": 240.8671875,
+          "width": 613,
+          "height": 40.59375
+        },
+        "visibleInViewport": true
+      },
+      "pageScrollY": 639.5,
+      "outcome": "auth-error-focused",
+      "specCriteriaMet": true
+    },
+    {
+      "scenario": "signup-error-409",
+      "outerViewport": {
+        "width": 1366,
+        "height": 768
+      },
+      "theme": "light",
+      "actualTabZoom": 2,
+      "cssViewport": [
+        683,
+        384
+      ],
+      "windowOuter": [
+        1366,
+        768
+      ],
+      "devicePixelRatio": 2,
+      "document": {
+        "client": [
+          683,
+          384
+        ],
+        "scroll": [
+          683,
+          1181
+        ],
+        "horizontalOverflow": false
+      },
+      "themeApplied": true,
+      "stickyHeaderBottom": 65,
+      "alert": {
+        "role": "alert",
+        "bounds": {
+          "x": 35,
+          "y": 240.8671875,
+          "width": 613,
+          "height": 40.59375,
+          "bottom": 281.4609375
+        },
+        "visibleInViewport": true,
+        "belowHeader": true,
+        "focused": true
+      },
+      "artwork": {
+        "alt": "A table being prepared for a shared meal",
+        "loaded": true,
+        "naturalSize": [
+          1254,
+          1254
+        ],
+        "objectFit": "contain",
+        "bounds": {
+          "x": 191.5,
+          "y": -638,
+          "width": 300,
+          "height": 300
+        }
+      },
+      "relatedActions": {
+        "reserveEnabled": null,
+        "reserveDescribedByAlert": null,
+        "signInAction": null,
+        "alertInsideReservationPanel": false,
+        "alertImmediatelyBelowSignIn": false,
+        "lookupAction": null
+      },
+      "focusTarget": {
+        "tag": "P",
+        "testId": "auth-error",
+        "bounds": {
+          "x": 35,
+          "y": 240.8671875,
+          "width": 613,
+          "height": 40.59375
+        },
+        "visibleInViewport": true
+      },
+      "pageScrollY": 719,
+      "outcome": "auth-error-focused",
+      "specCriteriaMet": true
+    },
+    {
+      "scenario": "home-reserve-unauth-enabled",
+      "outerViewport": {
+        "width": 1366,
+        "height": 768
+      },
+      "theme": "light",
+      "actualTabZoom": 2,
+      "cssViewport": [
+        683,
+        384
+      ],
+      "windowOuter": [
+        1366,
+        768
+      ],
+      "devicePixelRatio": 2,
+      "document": {
+        "client": [
+          683,
+          384
+        ],
+        "scroll": [
+          683,
+          1796
+        ],
+        "horizontalOverflow": false
+      },
+      "themeApplied": true,
+      "stickyHeaderBottom": 65,
+      "alert": {
+        "role": "alert",
+        "bounds": {
+          "x": 35,
+          "y": 92.9921875,
+          "width": 613,
+          "height": 40.59375,
+          "bottom": 133.5859375
+        },
+        "visibleInViewport": true,
+        "belowHeader": true,
+        "focused": false
+      },
+      "artwork": {
+        "alt": "A welcoming restaurant table set for dinner",
+        "loaded": true,
+        "naturalSize": [
+          1122,
+          1402
+        ],
+        "objectFit": "contain",
+        "bounds": {
+          "x": 418.625,
+          "y": -1301.1171875,
+          "width": 231.375,
+          "height": 165
+        }
+      },
+      "relatedActions": {
+        "reserveEnabled": true,
+        "reserveDescribedByAlert": true,
+        "signInAction": {
+          "bounds": {
+            "x": 35,
+            "y": 32.9921875,
+            "width": 613,
+            "height": 42
+          },
+          "visibleInViewport": true
+        },
+        "alertInsideReservationPanel": true,
+        "alertImmediatelyBelowSignIn": true,
+        "lookupAction": null
+      },
+      "focusTarget": {
+        "tag": "BUTTON",
+        "testId": "booking-submit",
+        "bounds": {
+          "x": 35,
+          "y": 169.10430908203125,
+          "width": 613,
+          "height": 44
+        },
+        "visibleInViewport": true
+      },
+      "pageScrollY": 1411,
+      "outcome": "reserve-feedback-visible-linked-and-scrolled",
+      "specCriteriaMet": true
+    },
+    {
+      "scenario": "lookup-unauth-error",
+      "outerViewport": {
+        "width": 1366,
+        "height": 768
+      },
+      "theme": "light",
+      "actualTabZoom": 2,
+      "cssViewport": [
+        683,
+        384
+      ],
+      "windowOuter": [
+        1366,
+        768
+      ],
+      "devicePixelRatio": 2,
+      "document": {
+        "client": [
+          683,
+          384
+        ],
+        "scroll": [
+          683,
+          757
+        ],
+        "horizontalOverflow": false
+      },
+      "themeApplied": true,
+      "stickyHeaderBottom": 65,
+      "alert": {
+        "role": "alert",
+        "bounds": {
+          "x": 35,
+          "y": 244.171875,
+          "width": 613,
+          "height": 40.59375,
+          "bottom": 284.765625
+        },
+        "visibleInViewport": true,
+        "belowHeader": true,
+        "focused": false
+      },
+      "artwork": {
+        "alt": "A restaurant table ready for a meal",
+        "loaded": true,
+        "naturalSize": [
+          1122,
+          1402
+        ],
+        "objectFit": "contain",
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        }
+      },
+      "relatedActions": {
+        "reserveEnabled": null,
+        "reserveDescribedByAlert": null,
+        "signInAction": null,
+        "alertInsideReservationPanel": false,
+        "alertImmediatelyBelowSignIn": false,
+        "lookupAction": {
+          "bounds": {
+            "x": 35,
+            "y": 132.549072265625,
+            "width": 613,
+            "height": 44
+          },
+          "visibleInViewport": true
+        }
+      },
+      "focusTarget": {
+        "tag": "BUTTON",
+        "testId": "lookup-submit",
+        "bounds": {
+          "x": 35,
+          "y": 132.549072265625,
+          "width": 613,
+          "height": 44
+        },
+        "visibleInViewport": true
+      },
+      "pageScrollY": 319,
+      "outcome": "lookup-feedback-visible",
+      "specCriteriaMet": true
+    },
+    {
+      "scenario": "login-error-401",
+      "outerViewport": {
+        "width": 1366,
+        "height": 768
+      },
+      "theme": "dark",
+      "actualTabZoom": 2,
+      "cssViewport": [
+        683,
+        384
+      ],
+      "windowOuter": [
+        1366,
+        768
+      ],
+      "devicePixelRatio": 2,
+      "document": {
+        "client": [
+          683,
+          384
+        ],
+        "scroll": [
+          683,
+          1101
+        ],
+        "horizontalOverflow": false
+      },
+      "themeApplied": true,
+      "stickyHeaderBottom": 65,
+      "alert": {
+        "role": "alert",
+        "bounds": {
+          "x": 35,
+          "y": 240.8671875,
+          "width": 613,
+          "height": 40.59375,
+          "bottom": 281.4609375
+        },
+        "visibleInViewport": true,
+        "belowHeader": true,
+        "focused": true
+      },
+      "artwork": {
+        "alt": "A warmly lit restaurant ready for guests",
+        "loaded": true,
+        "naturalSize": [
+          1254,
+          1254
+        ],
+        "objectFit": "contain",
+        "bounds": {
+          "x": 191.5,
+          "y": -558.5,
+          "width": 300,
+          "height": 300
+        }
+      },
+      "relatedActions": {
+        "reserveEnabled": null,
+        "reserveDescribedByAlert": null,
+        "signInAction": null,
+        "alertInsideReservationPanel": false,
+        "alertImmediatelyBelowSignIn": false,
+        "lookupAction": null
+      },
+      "focusTarget": {
+        "tag": "P",
+        "testId": "auth-error",
+        "bounds": {
+          "x": 35,
+          "y": 240.8671875,
+          "width": 613,
+          "height": 40.59375
+        },
+        "visibleInViewport": true
+      },
+      "pageScrollY": 639.5,
+      "outcome": "auth-error-focused",
+      "specCriteriaMet": true
+    },
+    {
+      "scenario": "signup-error-409",
+      "outerViewport": {
+        "width": 1366,
+        "height": 768
+      },
+      "theme": "dark",
+      "actualTabZoom": 2,
+      "cssViewport": [
+        683,
+        384
+      ],
+      "windowOuter": [
+        1366,
+        768
+      ],
+      "devicePixelRatio": 2,
+      "document": {
+        "client": [
+          683,
+          384
+        ],
+        "scroll": [
+          683,
+          1181
+        ],
+        "horizontalOverflow": false
+      },
+      "themeApplied": true,
+      "stickyHeaderBottom": 65,
+      "alert": {
+        "role": "alert",
+        "bounds": {
+          "x": 35,
+          "y": 240.8671875,
+          "width": 613,
+          "height": 40.59375,
+          "bottom": 281.4609375
+        },
+        "visibleInViewport": true,
+        "belowHeader": true,
+        "focused": true
+      },
+      "artwork": {
+        "alt": "A table being prepared for a shared meal",
+        "loaded": true,
+        "naturalSize": [
+          1254,
+          1254
+        ],
+        "objectFit": "contain",
+        "bounds": {
+          "x": 191.5,
+          "y": -638,
+          "width": 300,
+          "height": 300
+        }
+      },
+      "relatedActions": {
+        "reserveEnabled": null,
+        "reserveDescribedByAlert": null,
+        "signInAction": null,
+        "alertInsideReservationPanel": false,
+        "alertImmediatelyBelowSignIn": false,
+        "lookupAction": null
+      },
+      "focusTarget": {
+        "tag": "P",
+        "testId": "auth-error",
+        "bounds": {
+          "x": 35,
+          "y": 240.8671875,
+          "width": 613,
+          "height": 40.59375
+        },
+        "visibleInViewport": true
+      },
+      "pageScrollY": 719,
+      "outcome": "auth-error-focused",
+      "specCriteriaMet": true
+    },
+    {
+      "scenario": "home-reserve-unauth-enabled",
+      "outerViewport": {
+        "width": 1366,
+        "height": 768
+      },
+      "theme": "dark",
+      "actualTabZoom": 2,
+      "cssViewport": [
+        683,
+        384
+      ],
+      "windowOuter": [
+        1366,
+        768
+      ],
+      "devicePixelRatio": 2,
+      "document": {
+        "client": [
+          683,
+          384
+        ],
+        "scroll": [
+          683,
+          1796
+        ],
+        "horizontalOverflow": false
+      },
+      "themeApplied": true,
+      "stickyHeaderBottom": 65,
+      "alert": {
+        "role": "alert",
+        "bounds": {
+          "x": 35,
+          "y": 92.9921875,
+          "width": 613,
+          "height": 40.59375,
+          "bottom": 133.5859375
+        },
+        "visibleInViewport": true,
+        "belowHeader": true,
+        "focused": false
+      },
+      "artwork": {
+        "alt": "A welcoming restaurant table set for dinner",
+        "loaded": true,
+        "naturalSize": [
+          1122,
+          1402
+        ],
+        "objectFit": "contain",
+        "bounds": {
+          "x": 418.625,
+          "y": -1301.1171875,
+          "width": 231.375,
+          "height": 165
+        }
+      },
+      "relatedActions": {
+        "reserveEnabled": true,
+        "reserveDescribedByAlert": true,
+        "signInAction": {
+          "bounds": {
+            "x": 35,
+            "y": 32.9921875,
+            "width": 613,
+            "height": 42
+          },
+          "visibleInViewport": true
+        },
+        "alertInsideReservationPanel": true,
+        "alertImmediatelyBelowSignIn": true,
+        "lookupAction": null
+      },
+      "focusTarget": {
+        "tag": "BUTTON",
+        "testId": "booking-submit",
+        "bounds": {
+          "x": 35,
+          "y": 169.10354614257812,
+          "width": 613,
+          "height": 44
+        },
+        "visibleInViewport": true
+      },
+      "pageScrollY": 1411,
+      "outcome": "reserve-feedback-visible-linked-and-scrolled",
+      "specCriteriaMet": true
+    },
+    {
+      "scenario": "lookup-unauth-error",
+      "outerViewport": {
+        "width": 1366,
+        "height": 768
+      },
+      "theme": "dark",
+      "actualTabZoom": 2,
+      "cssViewport": [
+        683,
+        384
+      ],
+      "windowOuter": [
+        1366,
+        768
+      ],
+      "devicePixelRatio": 2,
+      "document": {
+        "client": [
+          683,
+          384
+        ],
+        "scroll": [
+          683,
+          757
+        ],
+        "horizontalOverflow": false
+      },
+      "themeApplied": true,
+      "stickyHeaderBottom": 65,
+      "alert": {
+        "role": "alert",
+        "bounds": {
+          "x": 35,
+          "y": 244.171875,
+          "width": 613,
+          "height": 40.59375,
+          "bottom": 284.765625
+        },
+        "visibleInViewport": true,
+        "belowHeader": true,
+        "focused": false
+      },
+      "artwork": {
+        "alt": "A restaurant table ready for a meal",
+        "loaded": true,
+        "naturalSize": [
+          1122,
+          1402
+        ],
+        "objectFit": "contain",
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        }
+      },
+      "relatedActions": {
+        "reserveEnabled": null,
+        "reserveDescribedByAlert": null,
+        "signInAction": null,
+        "alertInsideReservationPanel": false,
+        "alertImmediatelyBelowSignIn": false,
+        "lookupAction": {
+          "bounds": {
+            "x": 35,
+            "y": 132.550537109375,
+            "width": 613,
+            "height": 44
+          },
+          "visibleInViewport": true
+        }
+      },
+      "focusTarget": {
+        "tag": "BUTTON",
+        "testId": "lookup-submit",
+        "bounds": {
+          "x": 35,
+          "y": 132.550537109375,
+          "width": 613,
+          "height": 44
+        },
+        "visibleInViewport": true
+      },
+      "pageScrollY": 319,
+      "outcome": "lookup-feedback-visible",
+      "specCriteriaMet": true
+    },
+    {
+      "scenario": "login-error-401",
+      "outerViewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "theme": "light",
+      "actualTabZoom": 2,
+      "cssViewport": [
+        720,
+        450
+      ],
+      "windowOuter": [
+        1440,
+        900
+      ],
+      "devicePixelRatio": 2,
+      "document": {
+        "client": [
+          720,
+          450
+        ],
+        "scroll": [
+          720,
+          1101
+        ],
+        "horizontalOverflow": false
+      },
+      "themeApplied": true,
+      "stickyHeaderBottom": 65,
+      "alert": {
+        "role": "alert",
+        "bounds": {
+          "x": 35,
+          "y": 306.8671875,
+          "width": 650,
+          "height": 40.59375,
+          "bottom": 347.4609375
+        },
+        "visibleInViewport": true,
+        "belowHeader": true,
+        "focused": true
+      },
+      "artwork": {
+        "alt": "A warmly lit restaurant ready for guests",
+        "loaded": true,
+        "naturalSize": [
+          1254,
+          1254
+        ],
+        "objectFit": "contain",
+        "bounds": {
+          "x": 210,
+          "y": -492.5,
+          "width": 300,
+          "height": 300
+        }
+      },
+      "relatedActions": {
+        "reserveEnabled": null,
+        "reserveDescribedByAlert": null,
+        "signInAction": null,
+        "alertInsideReservationPanel": false,
+        "alertImmediatelyBelowSignIn": false,
+        "lookupAction": null
+      },
+      "focusTarget": {
+        "tag": "P",
+        "testId": "auth-error",
+        "bounds": {
+          "x": 35,
+          "y": 306.8671875,
+          "width": 650,
+          "height": 40.59375
+        },
+        "visibleInViewport": true
+      },
+      "pageScrollY": 573.5,
+      "outcome": "auth-error-focused",
+      "specCriteriaMet": true
+    },
+    {
+      "scenario": "signup-error-409",
+      "outerViewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "theme": "light",
+      "actualTabZoom": 2,
+      "cssViewport": [
+        720,
+        450
+      ],
+      "windowOuter": [
+        1440,
+        900
+      ],
+      "devicePixelRatio": 2,
+      "document": {
+        "client": [
+          720,
+          450
+        ],
+        "scroll": [
+          720,
+          1181
+        ],
+        "horizontalOverflow": false
+      },
+      "themeApplied": true,
+      "stickyHeaderBottom": 65,
+      "alert": {
+        "role": "alert",
+        "bounds": {
+          "x": 35,
+          "y": 306.8671875,
+          "width": 650,
+          "height": 40.59375,
+          "bottom": 347.4609375
+        },
+        "visibleInViewport": true,
+        "belowHeader": true,
+        "focused": true
+      },
+      "artwork": {
+        "alt": "A table being prepared for a shared meal",
+        "loaded": true,
+        "naturalSize": [
+          1254,
+          1254
+        ],
+        "objectFit": "contain",
+        "bounds": {
+          "x": 210,
+          "y": -572,
+          "width": 300,
+          "height": 300
+        }
+      },
+      "relatedActions": {
+        "reserveEnabled": null,
+        "reserveDescribedByAlert": null,
+        "signInAction": null,
+        "alertInsideReservationPanel": false,
+        "alertImmediatelyBelowSignIn": false,
+        "lookupAction": null
+      },
+      "focusTarget": {
+        "tag": "P",
+        "testId": "auth-error",
+        "bounds": {
+          "x": 35,
+          "y": 306.8671875,
+          "width": 650,
+          "height": 40.59375
+        },
+        "visibleInViewport": true
+      },
+      "pageScrollY": 653,
+      "outcome": "auth-error-focused",
+      "specCriteriaMet": true
+    },
+    {
+      "scenario": "home-reserve-unauth-enabled",
+      "outerViewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "theme": "light",
+      "actualTabZoom": 2,
+      "cssViewport": [
+        720,
+        450
+      ],
+      "windowOuter": [
+        1440,
+        900
+      ],
+      "devicePixelRatio": 2,
+      "document": {
+        "client": [
+          720,
+          450
+        ],
+        "scroll": [
+          720,
+          1796
+        ],
+        "horizontalOverflow": false
+      },
+      "themeApplied": true,
+      "stickyHeaderBottom": 65,
+      "alert": {
+        "role": "alert",
+        "bounds": {
+          "x": 35,
+          "y": 157.9921875,
+          "width": 650,
+          "height": 40.59375,
+          "bottom": 198.5859375
+        },
+        "visibleInViewport": true,
+        "belowHeader": true,
+        "focused": false
+      },
+      "artwork": {
+        "alt": "A welcoming restaurant table set for dinner",
+        "loaded": true,
+        "naturalSize": [
+          1122,
+          1402
+        ],
+        "objectFit": "contain",
+        "bounds": {
+          "x": 441.75,
+          "y": -1236.1171875,
+          "width": 245.25,
+          "height": 165
+        }
+      },
+      "relatedActions": {
+        "reserveEnabled": true,
+        "reserveDescribedByAlert": true,
+        "signInAction": {
+          "bounds": {
+            "x": 35,
+            "y": 97.9921875,
+            "width": 650,
+            "height": 42
+          },
+          "visibleInViewport": true
+        },
+        "alertInsideReservationPanel": true,
+        "alertImmediatelyBelowSignIn": true,
+        "lookupAction": null
+      },
+      "focusTarget": {
+        "tag": "BUTTON",
+        "testId": "booking-submit",
+        "bounds": {
+          "x": 35,
+          "y": 234.10488891601562,
+          "width": 650,
+          "height": 44
+        },
+        "visibleInViewport": true
+      },
+      "pageScrollY": 1346,
+      "outcome": "reserve-feedback-visible-linked-and-scrolled",
+      "specCriteriaMet": true
+    },
+    {
+      "scenario": "lookup-unauth-error",
+      "outerViewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "theme": "light",
+      "actualTabZoom": 2,
+      "cssViewport": [
+        720,
+        450
+      ],
+      "windowOuter": [
+        1440,
+        900
+      ],
+      "devicePixelRatio": 2,
+      "document": {
+        "client": [
+          720,
+          450
+        ],
+        "scroll": [
+          720,
+          757
+        ],
+        "horizontalOverflow": false
+      },
+      "themeApplied": true,
+      "stickyHeaderBottom": 65,
+      "alert": {
+        "role": "alert",
+        "bounds": {
+          "x": 35,
+          "y": 314.171875,
+          "width": 650,
+          "height": 40.59375,
+          "bottom": 354.765625
+        },
+        "visibleInViewport": true,
+        "belowHeader": true,
+        "focused": false
+      },
+      "artwork": {
+        "alt": "A restaurant table ready for a meal",
+        "loaded": true,
+        "naturalSize": [
+          1122,
+          1402
+        ],
+        "objectFit": "contain",
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        }
+      },
+      "relatedActions": {
+        "reserveEnabled": null,
+        "reserveDescribedByAlert": null,
+        "signInAction": null,
+        "alertInsideReservationPanel": false,
+        "alertImmediatelyBelowSignIn": false,
+        "lookupAction": {
+          "bounds": {
+            "x": 35,
+            "y": 202.3657684326172,
+            "width": 650,
+            "height": 44
+          },
+          "visibleInViewport": true
+        }
+      },
+      "focusTarget": {
+        "tag": "BUTTON",
+        "testId": "lookup-submit",
+        "bounds": {
+          "x": 35,
+          "y": 202.3657684326172,
+          "width": 650,
+          "height": 44
+        },
+        "visibleInViewport": true
+      },
+      "pageScrollY": 249,
+      "outcome": "lookup-feedback-visible",
+      "specCriteriaMet": true
+    },
+    {
+      "scenario": "login-error-401",
+      "outerViewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "theme": "dark",
+      "actualTabZoom": 2,
+      "cssViewport": [
+        720,
+        450
+      ],
+      "windowOuter": [
+        1440,
+        900
+      ],
+      "devicePixelRatio": 2,
+      "document": {
+        "client": [
+          720,
+          450
+        ],
+        "scroll": [
+          720,
+          1101
+        ],
+        "horizontalOverflow": false
+      },
+      "themeApplied": true,
+      "stickyHeaderBottom": 65,
+      "alert": {
+        "role": "alert",
+        "bounds": {
+          "x": 35,
+          "y": 306.8671875,
+          "width": 650,
+          "height": 40.59375,
+          "bottom": 347.4609375
+        },
+        "visibleInViewport": true,
+        "belowHeader": true,
+        "focused": true
+      },
+      "artwork": {
+        "alt": "A warmly lit restaurant ready for guests",
+        "loaded": true,
+        "naturalSize": [
+          1254,
+          1254
+        ],
+        "objectFit": "contain",
+        "bounds": {
+          "x": 210,
+          "y": -492.5,
+          "width": 300,
+          "height": 300
+        }
+      },
+      "relatedActions": {
+        "reserveEnabled": null,
+        "reserveDescribedByAlert": null,
+        "signInAction": null,
+        "alertInsideReservationPanel": false,
+        "alertImmediatelyBelowSignIn": false,
+        "lookupAction": null
+      },
+      "focusTarget": {
+        "tag": "P",
+        "testId": "auth-error",
+        "bounds": {
+          "x": 35,
+          "y": 306.8671875,
+          "width": 650,
+          "height": 40.59375
+        },
+        "visibleInViewport": true
+      },
+      "pageScrollY": 573.5,
+      "outcome": "auth-error-focused",
+      "specCriteriaMet": true
+    },
+    {
+      "scenario": "signup-error-409",
+      "outerViewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "theme": "dark",
+      "actualTabZoom": 2,
+      "cssViewport": [
+        720,
+        450
+      ],
+      "windowOuter": [
+        1440,
+        900
+      ],
+      "devicePixelRatio": 2,
+      "document": {
+        "client": [
+          720,
+          450
+        ],
+        "scroll": [
+          720,
+          1181
+        ],
+        "horizontalOverflow": false
+      },
+      "themeApplied": true,
+      "stickyHeaderBottom": 65,
+      "alert": {
+        "role": "alert",
+        "bounds": {
+          "x": 35,
+          "y": 306.8671875,
+          "width": 650,
+          "height": 40.59375,
+          "bottom": 347.4609375
+        },
+        "visibleInViewport": true,
+        "belowHeader": true,
+        "focused": true
+      },
+      "artwork": {
+        "alt": "A table being prepared for a shared meal",
+        "loaded": true,
+        "naturalSize": [
+          1254,
+          1254
+        ],
+        "objectFit": "contain",
+        "bounds": {
+          "x": 210,
+          "y": -572,
+          "width": 300,
+          "height": 300
+        }
+      },
+      "relatedActions": {
+        "reserveEnabled": null,
+        "reserveDescribedByAlert": null,
+        "signInAction": null,
+        "alertInsideReservationPanel": false,
+        "alertImmediatelyBelowSignIn": false,
+        "lookupAction": null
+      },
+      "focusTarget": {
+        "tag": "P",
+        "testId": "auth-error",
+        "bounds": {
+          "x": 35,
+          "y": 306.8671875,
+          "width": 650,
+          "height": 40.59375
+        },
+        "visibleInViewport": true
+      },
+      "pageScrollY": 653,
+      "outcome": "auth-error-focused",
+      "specCriteriaMet": true
+    },
+    {
+      "scenario": "home-reserve-unauth-enabled",
+      "outerViewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "theme": "dark",
+      "actualTabZoom": 2,
+      "cssViewport": [
+        720,
+        450
+      ],
+      "windowOuter": [
+        1440,
+        900
+      ],
+      "devicePixelRatio": 2,
+      "document": {
+        "client": [
+          720,
+          450
+        ],
+        "scroll": [
+          720,
+          1796
+        ],
+        "horizontalOverflow": false
+      },
+      "themeApplied": true,
+      "stickyHeaderBottom": 65,
+      "alert": {
+        "role": "alert",
+        "bounds": {
+          "x": 35,
+          "y": 157.9921875,
+          "width": 650,
+          "height": 40.59375,
+          "bottom": 198.5859375
+        },
+        "visibleInViewport": true,
+        "belowHeader": true,
+        "focused": false
+      },
+      "artwork": {
+        "alt": "A welcoming restaurant table set for dinner",
+        "loaded": true,
+        "naturalSize": [
+          1122,
+          1402
+        ],
+        "objectFit": "contain",
+        "bounds": {
+          "x": 441.75,
+          "y": -1236.1171875,
+          "width": 245.25,
+          "height": 165
+        }
+      },
+      "relatedActions": {
+        "reserveEnabled": true,
+        "reserveDescribedByAlert": true,
+        "signInAction": {
+          "bounds": {
+            "x": 35,
+            "y": 97.9921875,
+            "width": 650,
+            "height": 42
+          },
+          "visibleInViewport": true
+        },
+        "alertInsideReservationPanel": true,
+        "alertImmediatelyBelowSignIn": true,
+        "lookupAction": null
+      },
+      "focusTarget": {
+        "tag": "BUTTON",
+        "testId": "booking-submit",
+        "bounds": {
+          "x": 35,
+          "y": 234.10494995117188,
+          "width": 650,
+          "height": 44
+        },
+        "visibleInViewport": true
+      },
+      "pageScrollY": 1346,
+      "outcome": "reserve-feedback-visible-linked-and-scrolled",
+      "specCriteriaMet": true
+    },
+    {
+      "scenario": "lookup-unauth-error",
+      "outerViewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "theme": "dark",
+      "actualTabZoom": 2,
+      "cssViewport": [
+        720,
+        450
+      ],
+      "windowOuter": [
+        1440,
+        900
+      ],
+      "devicePixelRatio": 2,
+      "document": {
+        "client": [
+          720,
+          450
+        ],
+        "scroll": [
+          720,
+          757
+        ],
+        "horizontalOverflow": false
+      },
+      "themeApplied": true,
+      "stickyHeaderBottom": 65,
+      "alert": {
+        "role": "alert",
+        "bounds": {
+          "x": 35,
+          "y": 314.171875,
+          "width": 650,
+          "height": 40.59375,
+          "bottom": 354.765625
+        },
+        "visibleInViewport": true,
+        "belowHeader": true,
+        "focused": false
+      },
+      "artwork": {
+        "alt": "A restaurant table ready for a meal",
+        "loaded": true,
+        "naturalSize": [
+          1122,
+          1402
+        ],
+        "objectFit": "contain",
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        }
+      },
+      "relatedActions": {
+        "reserveEnabled": null,
+        "reserveDescribedByAlert": null,
+        "signInAction": null,
+        "alertInsideReservationPanel": false,
+        "alertImmediatelyBelowSignIn": false,
+        "lookupAction": {
+          "bounds": {
+            "x": 35,
+            "y": 202.54965209960938,
+            "width": 650,
+            "height": 44
+          },
+          "visibleInViewport": true
+        }
+      },
+      "focusTarget": {
+        "tag": "BUTTON",
+        "testId": "lookup-submit",
+        "bounds": {
+          "x": 35,
+          "y": 202.54965209960938,
+          "width": 650,
+          "height": 44
+        },
+        "visibleInViewport": true
+      },
+      "pageScrollY": 249,
+      "outcome": "lookup-feedback-visible",
+      "specCriteriaMet": true
+    }
+  ]
+}
