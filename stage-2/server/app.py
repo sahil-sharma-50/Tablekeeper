@@ -9,11 +9,13 @@ import re
 import secrets
 import sqlite3
 import threading
+from pathlib import Path
 from typing import Any, Callable
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse, Response
+from fastapi.responses import FileResponse, JSONResponse, Response
+from fastapi.staticfiles import StaticFiles
 from starlette.exceptions import HTTPException
 
 
@@ -239,7 +241,7 @@ def replay(state: dict[str, Any], uid: str, path: str, key: str,
         if (receipt["user_id"], receipt["path"], receipt["key"]) == (uid, path, key):
             if not same_json_value(receipt["body"], body):
                 error(409, "idempotency_key_reuse", "This key belongs to a different request.")
-            return receipt["response"]
+            return _public_receipt_response(receipt["response"])
     return None
 
 
@@ -327,10 +329,26 @@ def _restaurant(raw: Any) -> dict[str, Any]:
             invalid()
         seen.add(tid)
         tables.append({"id": tid, "label": label, "capacity": capacity})
+    raw_pairs = raw.get("combinable", [])
+    if not isinstance(raw_pairs, list):
+        malformed()
+    combinable, pair_keys = [], set()
+    for raw_pair in raw_pairs:
+        if not isinstance(raw_pair, list):
+            malformed()
+        if len(raw_pair) != 2:
+            invalid()
+        pair = [identifier(value) for value in raw_pair]
+        pair_key = frozenset(pair)
+        if len(pair_key) != 2 or not pair_key.issubset(seen) or pair_key in pair_keys:
+            invalid()
+        pair_keys.add(pair_key)
+        combinable.append(pair)
     return {"id": rid, "name": name, "timezone": timezone,
             "slot_minutes": slot, "reservation_duration_minutes": duration,
             "cancellation_cutoff_minutes": cutoff,
-            "opening_hours": opening_hours, "tables": tables}
+            "opening_hours": opening_hours, "tables": tables,
+            "combinable": combinable}
 
 
 def _fixture(root: dict[str, Any]) -> dict[str, Any]:
@@ -368,21 +386,22 @@ def _fixture(root: dict[str, Any]) -> dict[str, Any]:
         reference = string_value(required(item, "reference"))
         uid = identifier(required(item, "user_id"))
         rid = identifier(required(item, "restaurant_id"))
-        tid = identifier(required(item, "table_id"))
+        raw_table_ids = _requested_table_ids(item)
         start_local = string_value(required(item, "starts_at_local"))
         party = party_size_value(required(item, "party_size"))
         if not REFERENCE_RE.fullmatch(reference) or uid not in user_ids:
             invalid()
         try:
-            fields = booking_fields(state, rid, tid, start_local, party)
+            fields = booking_fields(state, rid, raw_table_ids, start_local, party)
         except ApiError:
             invalid()
         status = item.get("status", "confirmed")
         if status not in ("confirmed", "cancelled"):
             invalid()
         reservation = {"reservation_id": res_id, "reference": reference, "user_id": uid,
-                       "restaurant_id": rid, "table_id": tid, "party_size": party,
+                       "restaurant_id": rid, "party_size": party,
                        "status": status, **fields, "created_at": utc_now()}
+        _set_reservation_tables(reservation, fields["table_ids"])
         if any(row["reservation_id"] == res_id or row["reference"] == reference
                for row in state["reservations"]):
             invalid()
@@ -395,7 +414,8 @@ def _fixture(root: dict[str, Any]) -> dict[str, Any]:
 def restaurant_by_id(state: dict[str, Any], rid: str) -> dict[str, Any]:
     for restaurant in state["restaurants"]:
         if restaurant["id"] == rid:
-            return restaurant
+            return restaurant if "combinable" in restaurant else {
+                **restaurant, "combinable": []}
     error(404, "not_found", "Restaurant not found.")
 
 
@@ -404,6 +424,56 @@ def table_by_id(restaurant: dict[str, Any], tid: str) -> dict[str, Any]:
         if table["id"] == tid:
             return table
     error(404, "not_found", "Table not found.")
+
+
+def _requested_table_ids(obj: dict[str, Any], fallback: list[str] | None = None) -> Any:
+    if "table_id" in obj and "table_ids" in obj:
+        invalid()
+    if "table_ids" in obj:
+        if not isinstance(obj["table_ids"], list):
+            malformed()
+        return obj["table_ids"]
+    if "table_id" in obj:
+        return [obj["table_id"]]
+    if fallback is not None:
+        return list(fallback)
+    return [required(obj, "table_id")]
+
+
+def _canonical_table_ids(restaurant: dict[str, Any], raw_ids: Any) -> list[str]:
+    if not isinstance(raw_ids, list):
+        malformed()
+    if not 1 <= len(raw_ids) <= 2:
+        error(422, "combination_not_allowed", "Only one table or a declared pair can be selected.")
+    table_ids = [identifier(value) for value in raw_ids]
+    if len(set(table_ids)) != len(table_ids):
+        invalid()
+    for table_id in table_ids:
+        table_by_id(restaurant, table_id)
+    if len(table_ids) == 1:
+        return table_ids
+    for pair in restaurant.get("combinable", []):
+        if set(pair) == set(table_ids):
+            return list(pair)
+    error(422, "combination_not_allowed", "Those tables are not a declared pair.")
+
+
+def _reservation_table_ids(reservation: dict[str, Any]) -> list[str]:
+    if "table_ids" in reservation:
+        return reservation["table_ids"]
+    return [reservation["table_id"]]
+
+
+def _table_fields(table_ids: list[str]) -> dict[str, Any]:
+    fields: dict[str, Any] = {"table_ids": list(table_ids)}
+    if len(table_ids) == 1:
+        fields["table_id"] = table_ids[0]
+    return fields
+
+
+def _set_reservation_tables(reservation: dict[str, Any], table_ids: list[str]) -> None:
+    reservation.pop("table_id", None)
+    reservation.update(_table_fields(table_ids))
 
 
 def _resolve_local(value: dt.datetime, timezone: str) -> dt.datetime:
@@ -422,10 +492,10 @@ def utc_now() -> str:
     return _iso(dt.datetime.now(UTC))
 
 
-def booking_fields(state: dict[str, Any], rid: str, tid: str,
-                   starts_at_local: str, party: int) -> dict[str, str]:
+def booking_fields(state: dict[str, Any], rid: str, table_ids: Any,
+                   starts_at_local: str, party: int) -> dict[str, Any]:
     restaurant = restaurant_by_id(state, rid)
-    table = table_by_id(restaurant, tid)
+    table_ids = _canonical_table_ids(restaurant, table_ids)
     local = _parse_local(starts_at_local)
     start = _resolve_local(local, restaurant["timezone"])
     weekday = WEEKDAYS[local.weekday()]
@@ -440,12 +510,13 @@ def booking_fields(state: dict[str, Any], rid: str, tid: str,
         error(422, "outside_opening_hours", "The reservation does not fit opening hours.")
     if (minute - opening) % restaurant["slot_minutes"]:
         error(422, "not_on_slot_grid", "The start is not on the reservation grid.")
-    if party > table["capacity"]:
-        error(422, "party_exceeds_capacity", "The party is larger than the table capacity.")
+    capacity = sum(table_by_id(restaurant, table_id)["capacity"] for table_id in table_ids)
+    if party > capacity:
+        error(422, "party_exceeds_capacity", "The party is larger than the selected tables' capacity.")
     end = (start.astimezone(UTC) + dt.timedelta(minutes=duration)).astimezone(
         ZoneInfo(restaurant["timezone"]))
-    return {"starts_at_local": starts_at_local, "starts_at": _iso(start),
-            "ends_at": _iso(end)}
+    return {"table_ids": table_ids, "starts_at_local": starts_at_local,
+            "starts_at": _iso(start), "ends_at": _iso(end)}
 
 
 def _instant(value: str) -> dt.datetime:
@@ -463,15 +534,28 @@ def overlaps(left: dict[str, Any], right: dict[str, Any]) -> bool:
 def free_for(state: dict[str, Any], candidate: dict[str, Any],
              ignored_references: set[str] | None = None) -> bool:
     ignored_references = ignored_references or set()
+    candidate_tables = set(_reservation_table_ids(candidate))
     return not any(
         current["status"] == "confirmed" and current["reference"] not in ignored_references and
         current["restaurant_id"] == candidate["restaurant_id"] and
-        current["table_id"] == candidate["table_id"] and overlaps(candidate, current)
+        candidate_tables.intersection(_reservation_table_ids(current)) and overlaps(candidate, current)
         for current in state["reservations"])
 
 
 def public_reservation(reservation: dict[str, Any]) -> dict[str, Any]:
-    return {key: value for key, value in reservation.items() if key != "user_id"}
+    result = {key: value for key, value in reservation.items()
+              if key not in ("user_id", "table_id", "table_ids")}
+    result.update(_table_fields(_reservation_table_ids(reservation)))
+    return result
+
+
+def _public_receipt_response(response: dict[str, Any]) -> dict[str, Any]:
+    if isinstance(response.get("reservations"), list):
+        return {**response, "reservations": [public_reservation(item)
+                                             for item in response["reservations"]]}
+    if "table_id" in response or "table_ids" in response:
+        return public_reservation(response)
+    return response
 
 
 def _new_id(state: dict[str, Any], prefix: str, field: str) -> str:
@@ -505,11 +589,9 @@ def _cutoff_passed(reservation: dict[str, Any], restaurant: dict[str, Any]) -> b
     return delta_us <= restaurant["cancellation_cutoff_minutes"] * 60 * 1_000_000
 
 
-def _patch_inputs(body: dict[str, Any], current: dict[str, Any]) -> tuple[str, str, int]:
-    table_id, start_local, party = (
-        current["table_id"], current["starts_at_local"], current["party_size"])
-    if "table_id" in body:
-        table_id = identifier(body["table_id"])
+def _patch_inputs(body: dict[str, Any], current: dict[str, Any]) -> tuple[Any, str, int]:
+    table_ids = _requested_table_ids(body, _reservation_table_ids(current))
+    start_local, party = current["starts_at_local"], current["party_size"]
     if "starts_at_local" in body:
         start_local = body["starts_at_local"]
         if not isinstance(start_local, str):
@@ -517,7 +599,7 @@ def _patch_inputs(body: dict[str, Any], current: dict[str, Any]) -> tuple[str, s
         _parse_local(start_local)
     if "party_size" in body:
         party = party_size_value(body["party_size"])
-    return table_id, start_local, party
+    return table_ids, start_local, party
 
 
 def _validate_internal_state(state: Any) -> bool:
@@ -555,8 +637,19 @@ def _validate_internal_state(state: Any) -> bool:
         if not isinstance(reservation, dict) or not all(
                 isinstance(reservation.get(key), str) for key in (
                     "reservation_id", "reference", "user_id", "restaurant_id",
-                    "table_id", "starts_at_local", "starts_at", "ends_at",
+                    "starts_at_local", "starts_at", "ends_at",
                     "created_at", "status")):
+            return False
+        if "table_ids" in reservation:
+            table_ids = reservation["table_ids"]
+            if not isinstance(table_ids, list) or not 1 <= len(table_ids) <= 2:
+                return False
+            if "table_id" in reservation and (
+                    len(table_ids) != 1 or reservation["table_id"] != table_ids[0]):
+                return False
+        elif isinstance(reservation.get("table_id"), str):
+            table_ids = [reservation["table_id"]]
+        else:
             return False
         if (reservation["user_id"] not in user_ids or
                 reservation["restaurant_id"] not in restaurants or
@@ -570,7 +663,12 @@ def _validate_internal_state(state: Any) -> bool:
         ids.add(reservation["reservation_id"])
         try:
             restaurant = restaurants[reservation["restaurant_id"]]
-            table_by_id(restaurant, reservation["table_id"])
+            if _canonical_table_ids(restaurant, table_ids) != table_ids:
+                return False
+            capacity = sum(table_by_id(restaurant, table_id)["capacity"]
+                           for table_id in table_ids)
+            if reservation["party_size"] > capacity:
+                return False
             local = _parse_local(reservation["starts_at_local"])
             if _instant(reservation["starts_at"]) != _resolve_local(
                     local, restaurant["timezone"]).astimezone(UTC):
@@ -585,7 +683,8 @@ def _validate_internal_state(state: Any) -> bool:
         if reservation["status"] == "confirmed" and any(
                 other["status"] == "confirmed" and
                 other["restaurant_id"] == reservation["restaurant_id"] and
-                other["table_id"] == reservation["table_id"] and overlaps(reservation, other)
+                set(_reservation_table_ids(reservation)).intersection(
+                    _reservation_table_ids(other)) and overlaps(reservation, other)
                 for other in rows[index + 1:]):
             return False
     scopes = set()
@@ -606,6 +705,9 @@ def _validate_internal_state(state: Any) -> bool:
 
 
 app = FastAPI(default_response_class=ApiJSONResponse)
+_STATIC_DIR = Path(os.environ.get("TABLEKEEPER_STATIC", "/app/static"))
+app.mount("/assets", StaticFiles(directory=_STATIC_DIR / "assets", check_dir=False),
+          name="assets")
 
 
 @app.exception_handler(ApiError)
@@ -625,6 +727,14 @@ async def http_error_handler(request: Request, exc: HTTPException) -> ApiJSONRes
 async def unexpected_error_handler(request: Request, exc: Exception) -> ApiJSONResponse:
     return ApiJSONResponse(status_code=500, content={
         "error": {"code": "internal_error", "message": "The service could not complete the request."}})
+
+
+@app.get("/", include_in_schema=False)
+@app.get("/signup", include_in_schema=False)
+@app.get("/login", include_in_schema=False)
+@app.get("/lookup", include_in_schema=False)
+def spa_entry() -> FileResponse:
+    return FileResponse(_STATIC_DIR / "index.html", media_type="text/html; charset=utf-8")
 
 
 @app.get("/health")
@@ -745,15 +855,24 @@ def availability(request: Request) -> dict[str, Any]:
                 continue
             end = (start.astimezone(UTC) + dt.timedelta(minutes=duration)).astimezone(
                 ZoneInfo(restaurant["timezone"]))
-            candidate = {"restaurant_id": rid, "table_id": "", "starts_at": _iso(start),
+            candidate = {"restaurant_id": rid, "table_ids": [], "starts_at": _iso(start),
                          "ends_at": _iso(end), "status": "confirmed"}
-            free_tables = []
+            free_tables, available_options = [], []
             for table in restaurant["tables"]:
-                candidate["table_id"] = table["id"]
+                candidate["table_ids"] = [table["id"]]
                 if table["capacity"] >= party and free_for(state, candidate):
                     free_tables.append(table["id"])
+                    available_options.append({"table_ids": [table["id"]],
+                                              "capacity": table["capacity"]})
+            for pair in restaurant.get("combinable", []):
+                candidate["table_ids"] = list(pair)
+                capacity = sum(table_by_id(restaurant, table_id)["capacity"]
+                               for table_id in pair)
+                if capacity >= party and free_for(state, candidate):
+                    available_options.append({"table_ids": list(pair), "capacity": capacity})
             slots.append({"starts_at_local": local.strftime("%Y-%m-%dT%H:%M"),
-                          "starts_at": _iso(start), "available_table_ids": free_tables})
+                          "starts_at": _iso(start), "available_table_ids": free_tables,
+                          "available_options": available_options})
             minute += step
     return {"restaurant_id": rid, "date": date.isoformat(),
             "timezone": restaurant["timezone"], "slots": slots}
@@ -770,17 +889,18 @@ async def create_reservation(request: Request) -> ApiJSONResponse:
         if previous is not None:
             return 200, previous
         rid = identifier(required(body, "restaurant_id"))
-        tid = identifier(required(body, "table_id"))
+        table_ids = _requested_table_ids(body)
         start_local = required(body, "starts_at_local")
         if not isinstance(start_local, str):
             malformed()
         _parse_local(start_local)
         party = party_size_value(required(body, "party_size"))
-        fields = booking_fields(state, rid, tid, start_local, party)
+        fields = booking_fields(state, rid, table_ids, start_local, party)
         reservation = {"reservation_id": _new_id(state, "res_", "reservation_id"),
                        "reference": _new_reference(state), "user_id": uid,
-                       "restaurant_id": rid, "table_id": tid, "party_size": party,
+                       "restaurant_id": rid, "party_size": party,
                        "status": "confirmed", **fields, "created_at": utc_now()}
+        _set_reservation_tables(reservation, fields["table_ids"])
         if not free_for(state, reservation):
             error(409, "table_unavailable", "That table is already reserved.")
         state["reservations"].append(reservation)
@@ -836,15 +956,19 @@ async def amend_reservation(reference: str, request: Request) -> dict[str, Any]:
         restaurant = restaurant_by_id(state, reservation["restaurant_id"])
         if _cutoff_passed(reservation, restaurant):
             error(409, "cutoff_passed", "The cancellation cutoff has passed.")
-        tid, start_local, party = _patch_inputs(body, reservation)
-        if (tid, start_local, party) == (
-                reservation["table_id"], reservation["starts_at_local"], reservation["party_size"]):
+        table_ids, start_local, party = _patch_inputs(body, reservation)
+        if (table_ids, start_local, party) == (
+                _reservation_table_ids(reservation), reservation["starts_at_local"],
+                reservation["party_size"]):
             return public_reservation(reservation)
-        fields = booking_fields(state, reservation["restaurant_id"], tid, start_local, party)
-        candidate = {**reservation, "table_id": tid, "party_size": party, **fields}
+        fields = booking_fields(state, reservation["restaurant_id"], table_ids,
+                                start_local, party)
+        candidate = {**reservation, "party_size": party, **fields}
+        _set_reservation_tables(candidate, fields["table_ids"])
         if not free_for(state, candidate, {reference}):
             error(409, "table_unavailable", "That table is already reserved.")
-        reservation.update({"table_id": tid, "party_size": party, **fields})
+        reservation.update({"party_size": party, **fields})
+        _set_reservation_tables(reservation, fields["table_ids"])
         return public_reservation(reservation)
     return transaction(change)
 
@@ -871,7 +995,7 @@ async def move_reservations(request: Request) -> ApiJSONResponse:
                 invalid()
             references.append(reference)
             patches.append({name: value for name, value in item.items()
-                            if name in ("table_id", "starts_at_local", "party_size")})
+                            if name in ("table_id", "table_ids", "starts_at_local", "party_size")})
         if len(set(references)) != len(references):
             invalid()
 
@@ -887,14 +1011,16 @@ async def move_reservations(request: Request) -> ApiJSONResponse:
             restaurant = restaurant_by_id(state, reservation["restaurant_id"])
             if _cutoff_passed(reservation, restaurant):
                 error(409, "cutoff_passed", "The cancellation cutoff has passed.")
-            tid, start_local, party = _patch_inputs(patch, reservation)
-            if (tid, start_local, party) == (
-                    reservation["table_id"], reservation["starts_at_local"],
+            table_ids, start_local, party = _patch_inputs(patch, reservation)
+            if (table_ids, start_local, party) == (
+                    _reservation_table_ids(reservation), reservation["starts_at_local"],
                     reservation["party_size"]):
                 candidate = reservation.copy()
             else:
-                fields = booking_fields(state, reservation["restaurant_id"], tid, start_local, party)
-                candidate = {**reservation, "table_id": tid, "party_size": party, **fields}
+                fields = booking_fields(state, reservation["restaurant_id"], table_ids,
+                                        start_local, party)
+                candidate = {**reservation, "party_size": party, **fields}
+                _set_reservation_tables(candidate, fields["table_ids"])
             reservations.append(reservation)
             candidates.append(candidate)
 
@@ -904,11 +1030,13 @@ async def move_reservations(request: Request) -> ApiJSONResponse:
         for index, candidate in enumerate(candidates):
             for other in candidates[index + 1:]:
                 if (candidate["restaurant_id"] == other["restaurant_id"] and
-                        candidate["table_id"] == other["table_id"] and overlaps(candidate, other)):
+                        set(_reservation_table_ids(candidate)).intersection(
+                            _reservation_table_ids(other)) and overlaps(candidate, other)):
                     error(409, "table_unavailable", "The batch contains overlapping reservations.")
         for reservation, candidate in zip(reservations, candidates):
             reservation.update({name: candidate[name] for name in (
-                "table_id", "party_size", "starts_at_local", "starts_at", "ends_at")})
+                "party_size", "starts_at_local", "starts_at", "ends_at")})
+            _set_reservation_tables(reservation, _reservation_table_ids(candidate))
         response = {"reservations": [public_reservation(item) for item in candidates]}
         record_receipt(state, uid, "/reservation-moves", key, body, response)
         return 201, response
