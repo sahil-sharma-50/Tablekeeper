@@ -1,0 +1,76 @@
+{
+  "application_sha": "64d0f501f733f773c3357092c6ea5676b90512d0",
+  "requirements_digest": "370f2b750a2e221f064f9452d0de6b716a50fc00f2bfea98f290e6abefd8489b",
+  "image": {
+    "tag": "tablekeeper-s2-64d0f50:qa",
+    "sha256": "3454d6cb9cd4438a6b2fbbd6660e3738c3a7048868ccc789d6f22e628e134de7",
+    "limits": {"cpus": 2, "memory": "2g"},
+    "launch_to_first_health_ms": 826.4,
+    "health_status": 200
+  },
+  "account_failures": {
+    "cases": 8,
+    "routes": ["login", "signup"],
+    "themes": ["light", "dark"],
+    "viewports": [[375, 812], [1280, 720]],
+    "status_by_route": {"login": 401, "signup": 409},
+    "all_alerts_focused_visible_and_role_alert": true,
+    "all_input_values_retained": true,
+    "mobile_bounds": {
+      "login": {"top": 755.33, "bottom": 795.92, "header_bottom": 65},
+      "signup": {"top": 670.33, "bottom": 710.92, "header_bottom": 65}
+    },
+    "desktop_bounds_1280x720": {
+      "login": {"top": 504.52, "bottom": 545.11, "header_bottom": 76},
+      "signup": {"top": 583.52, "bottom": 624.11, "header_bottom": 76}
+    }
+  },
+  "signed_out_reservation": {
+    "cases": 4,
+    "themes": ["light", "dark"],
+    "viewports": [[375, 812], [1280, 720]],
+    "manual_scroll_after_selection": false,
+    "focused_role_alert_visible_below_sticky_header": true,
+    "reserve_enabled": true,
+    "aria_describedby_matches_alert": true,
+    "date_party_and_pair_selection_retained": true,
+    "bounds": {
+      "375x812": {"top": 501.73, "bottom": 560.92, "header_bottom": 65, "scroll_y": 969},
+      "1280x720": {"top": 628.56, "bottom": 687.75, "header_bottom": 76, "scroll_y": 277}
+    }
+  },
+  "mobile_pair_409": {
+    "viewport": [375, 812],
+    "theme": "dark",
+    "competitor_status": 201,
+    "refusal_status": 409,
+    "availability_refresh_status": 200,
+    "alert": {"top": 596, "bottom": 636.59, "header_bottom": 65, "focused": true, "role": "alert"},
+    "aria_describedby_matches_alert": true,
+    "selected_cell_unavailable": true,
+    "date_and_party_retained": true,
+    "stale_refusal_cleared_after_new_selection": true
+  },
+  "pair_uncertainty_and_cancel": {
+    "first_committed_post_status": 201,
+    "browser_saw_uncertainty": true,
+    "retry_status": 200,
+    "retry_same_key": true,
+    "retry_same_body": true,
+    "original_confirmation_restored": true,
+    "table_label": "C + A",
+    "local_time": "2026-10-14 21:00",
+    "lookup_status": 200,
+    "cancel_label": "Cancel reservation",
+    "cancel_outlined": true,
+    "cancel_status": 200,
+    "cancel_post_count": 1,
+    "final_status_text": "cancelled",
+    "cancel_action_removed": true,
+    "pair_available_after_cancel": true,
+    "competing_pair_remains_unavailable": true,
+    "reference_and_bearer_values_recorded": false
+  },
+  "browser_console": {"errors": 0, "warnings": 0},
+  "native_200_percent_zoom": "unproven; prior capability evidence retained; unavailable controls not retried"
+}
