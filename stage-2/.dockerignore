@@ -7,3 +7,6 @@ __pycache__
 .env
 .env.*
 node_modules
+web/node_modules
+web/dist
+demo

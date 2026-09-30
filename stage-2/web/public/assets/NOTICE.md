@@ -1,0 +1,1 @@
+The three PNG illustrations were generated with OpenAI imagegen for this participant and are supplied as approved visual inputs, not application code. Source Sans 3 is bundled under the accompanying SIL OFL license. Four Tabler SVG icons are from v3.46.0 under the accompanying MIT license. Retain these notices in the delivered service.
