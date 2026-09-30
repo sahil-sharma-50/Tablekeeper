@@ -26,6 +26,8 @@ TIMING_LOCK = threading.Lock()
 class Reply:
     status: int
     body: dict
+    content_type: str | None
+    raw: bytes
 
 
 def call(base: str, path: str, method: str = "GET", body=None, *,
@@ -58,7 +60,7 @@ def call(base: str, path: str, method: str = "GET", body=None, *,
         with TIMING_LOCK:
             timings.append(elapsed)
     parsed = json.loads(raw) if raw else {}
-    return Reply(response.code, parsed)
+    return Reply(response.code, parsed, response.headers.get("Content-Type"), raw)
 
 
 def expect(reply: Reply, status: int, code: str | None = None) -> Reply:
@@ -72,6 +74,81 @@ def expect(reply: Reply, status: int, code: str | None = None) -> Reply:
         f"expected HTTP {status}{' '+code if code else ''}; "
         f"got HTTP {reply.status}{' '+str(got_code) if got_code else ''}")
     return reply
+
+
+def expect_json_header(reply: Reply, status: int, path: str) -> Reply:
+    assert reply.status == status, f"{path}: expected HTTP {status}, got {reply.status}"
+    assert reply.raw, f"{path}: expected a JSON body"
+    assert reply.content_type == "application/json; charset=utf-8", (
+        f"{path}: expected Content-Type application/json; charset=utf-8, "
+        f"got {reply.content_type!r}")
+    print(f"HEADER status={reply.status} path={path} content_type={reply.content_type!r}")
+    return reply
+
+
+def expect_empty_204(reply: Reply, path: str) -> None:
+    assert reply.status == 204 and not reply.raw, (
+        f"{path}: expected an empty HTTP 204; got HTTP {reply.status} "
+        f"with {len(reply.raw)} body bytes")
+    assert reply.content_type is None, (
+        f"{path}: empty HTTP 204 unexpectedly has Content-Type {reply.content_type!r}")
+    print(f"HEADER status=204 path={path} content_type=None body_bytes=0")
+
+
+def check_response_content_types(base: str) -> None:
+    account = user(90)
+    fixture_data = fixture(users=[account])
+
+    expect_json_header(call(base, "/health"), 200, "/health")
+    expect_json_header(call(base, "/restaurants"), 200, "/restaurants")
+    expect_empty_204(call(base, "/_test/reset", "POST", fixture_data),
+                     "/_test/reset")
+    token = login(base, account)
+    expect_json_header(call(base, "/auth/login", "POST", {
+        "email": account["email"], "password": account["password"]}),
+        200, "/auth/login")
+    expect_json_header(call(base, "/auth/signup", "POST", {
+        "email": "header-check@example.com", "password": PASSWORD,
+        "display_name": "Header Check"}), 201, "/auth/signup")
+    expect_json_header(call(base, "/reservations"), 401, "/reservations 401")
+    expect_json_header(call(base, "/reservations/UNKNOWN", token=token),
+                       404, "/reservations/{reference} 404")
+    expect_json_header(call(base, "/no-such-path"), 404, "/no-such-path 404")
+
+    booking = booking_body(local_date(), table="t_1", party=2)
+    created = expect_json_header(call(base, "/reservations", "POST", booking,
+                                      token=token, key="charset-create"),
+                                 201, "POST /reservations 201")
+    expect_json_header(call(base, "/reservations", "POST", booking,
+                            token=token, key="charset-conflict"),
+                       409, "POST /reservations 409")
+    invalid = booking_body(local_date(), table="t_1", at="19:15", party=2)
+    expect_json_header(call(base, "/reservations", "POST", invalid,
+                            token=token, key="charset-invalid"),
+                       422, "POST /reservations 422")
+    expect_json_header(call(base, "/reservation-moves", "POST", {
+        "moves": [{"reference": created.body["reference"], "table_id": "t_2"}]},
+        token=token, key="charset-move"), 201, "POST /reservation-moves 201")
+
+    exported = expect_json_header(call(base, "/_test/export"), 200,
+                                  "/_test/export")
+    expect_empty_204(call(base, "/_test/reset", "POST",
+                          fixture(users=[user(91)])), "/_test/reset before import")
+    expect_empty_204(call(base, "/_test/import", "POST", exported.body, timeout=10),
+                     "/_test/import")
+
+    # FastAPI's UI route is non-JSON and must retain its own media type.
+    request = Request(base.rstrip("/") + "/docs", headers={"Accept": "text/html"})
+    response = urlopen(request, timeout=5)
+    html = response.read()
+    assert response.status == 200 and b"<!DOCTYPE html>" in html[:256], (
+        f"/docs: expected HTML documentation, got HTTP {response.status}")
+    assert response.headers.get("Content-Type") == "text/html; charset=utf-8", (
+        f"/docs: expected text/html; charset=utf-8, got "
+        f"{response.headers.get('Content-Type')!r}")
+    print(f"HEADER status=200 path=/docs content_type={response.headers.get('Content-Type')!r}")
+    print("PASS response Content-Type: JSON 200/201/401/404/409/422, export, "
+          "empty 204 reset/import, and non-JSON HTML docs")
 
 
 def user(index: int, email: str | None = None) -> dict:
@@ -779,6 +856,7 @@ def main() -> None:
     args = parser.parse_args()
 
     checks = [
+        ("response Content-Type contract", lambda: check_response_content_types(args.base_url)),
         ("50 overlapping writes", lambda: check_fifty_overlapping_writes(args.base_url)),
         ("50 identical-key retries", lambda: check_identical_key_race(args.base_url)),
         ("50 identical move-key retries",
