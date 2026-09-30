@@ -15,9 +15,11 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 DATE = "2027-01-04"
+JSON_CONTENT_TYPE = "application/json; charset=utf-8"
 
 
-def call(base: str, method: str, path: str, body=None, token=None, key=None):
+def call(base: str, method: str, path: str, body=None, token=None, key=None,
+         expect_json=False, expect_no_content_type=False):
     headers = {}
     if body is not None:
         headers["Content-Type"] = "application/json"
@@ -34,6 +36,11 @@ def call(base: str, method: str, path: str, body=None, token=None, key=None):
     except urllib.error.URLError as exc:
         raise AssertionError(f"{method} {path} transport error: {exc.reason}") from exc
     raw = response.read()
+    if expect_json:
+        assert response.headers.get("Content-Type") == JSON_CONTENT_TYPE, response.headers
+    if expect_no_content_type:
+        assert response.headers.get("Content-Type") is None, response.headers
+        assert not raw
     return response.status, None if not raw else json.loads(raw)
 
 
@@ -86,15 +93,24 @@ def main():
             else:
                 raise AssertionError("service did not become healthy")
 
-            require(call(base, "POST", "/_test/reset", fixture())[0], 204)
+            require(call(base, "POST", "/_test/reset", fixture(),
+                         expect_no_content_type=True)[0], 204)
+            status, health = call(base, "GET", "/health", expect_json=True)
+            require(status, 200, health)
+            status, restaurant_list = call(base, "GET", "/restaurants", expect_json=True)
+            require(status, 200, restaurant_list)
+            status, missing = call(base, "GET", "/no-such-path", expect_json=True)
+            require(status, 404, missing)
             status, login = call(base, "POST", "/auth/login", {
-                "email": "ada@example.com", "password": "correct horse"})
+                "email": "ada@example.com", "password": "correct horse"},
+                expect_json=True)
             require(status, 200, login)
             token = login["token"]
 
             body = {"restaurant_id": "r_anker", "table_id": "t_2",
                     "starts_at_local": f"{DATE}T19:00", "party_size": 4}
-            status, original = call(base, "POST", "/reservations", body, token, "receipt-1")
+            status, original = call(base, "POST", "/reservations", body, token, "receipt-1",
+                                    expect_json=True)
             require(status, 201, original)
             reordered = {"party_size": 4, "starts_at_local": body["starts_at_local"],
                          "table_id": "t_2", "restaurant_id": "r_anker"}
@@ -181,7 +197,7 @@ def main():
             spring = {"restaurant_id": "r_anker", "table_id": "t_2",
                       "starts_at_local": "2026-03-29T02:30", "party_size": 4}
             status, spring_error = call(base, "POST", "/reservations", spring,
-                                        token, "spring-gap")
+                                        token, "spring-gap", expect_json=True)
             require(status, 422, spring_error)
             assert spring_error["error"]["code"] == "invalid_local_time"
 

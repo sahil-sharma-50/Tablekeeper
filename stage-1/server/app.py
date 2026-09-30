@@ -16,6 +16,11 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse, Response
 from starlette.exceptions import HTTPException
 
+
+class ApiJSONResponse(JSONResponse):
+    media_type = "application/json; charset=utf-8"
+
+
 UTC = dt.timezone.utc
 WEEKDAYS = ("mon", "tue", "wed", "thu", "fri", "sat", "sun")
 LOCAL_RE = re.compile(r"^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}$")
@@ -600,25 +605,25 @@ def _validate_internal_state(state: Any) -> bool:
     return True
 
 
-app = FastAPI()
+app = FastAPI(default_response_class=ApiJSONResponse)
 
 
 @app.exception_handler(ApiError)
-async def api_error_handler(request: Request, exc: ApiError) -> JSONResponse:
-    return JSONResponse(status_code=exc.status,
-                        content={"error": {"code": exc.code, "message": str(exc)}})
+async def api_error_handler(request: Request, exc: ApiError) -> ApiJSONResponse:
+    return ApiJSONResponse(status_code=exc.status,
+                            content={"error": {"code": exc.code, "message": str(exc)}})
 
 
 @app.exception_handler(HTTPException)
-async def http_error_handler(request: Request, exc: HTTPException) -> JSONResponse:
+async def http_error_handler(request: Request, exc: HTTPException) -> ApiJSONResponse:
     code = "not_found" if exc.status_code == 404 else "method_not_allowed"
-    return JSONResponse(status_code=exc.status_code,
-                        content={"error": {"code": code, "message": "The route was not found."}})
+    return ApiJSONResponse(status_code=exc.status_code,
+                           content={"error": {"code": code, "message": "The route was not found."}})
 
 
 @app.exception_handler(Exception)
-async def unexpected_error_handler(request: Request, exc: Exception) -> JSONResponse:
-    return JSONResponse(status_code=500, content={
+async def unexpected_error_handler(request: Request, exc: Exception) -> ApiJSONResponse:
+    return ApiJSONResponse(status_code=500, content={
         "error": {"code": "internal_error", "message": "The service could not complete the request."}})
 
 
@@ -651,7 +656,7 @@ async def import_state(request: Request) -> Response:
 
 
 @app.post("/auth/signup", status_code=201)
-async def signup(request: Request) -> JSONResponse:
+async def signup(request: Request) -> ApiJSONResponse:
     body = await body_object(request)
     email = email_value(required(body, "email"))
     password = string_value(required(body, "password"))
@@ -671,7 +676,7 @@ async def signup(request: Request) -> JSONResponse:
         state["tokens"][token] = uid
         return {"user_id": uid, "display_name": display_name, "token": token}
 
-    return JSONResponse(status_code=201, content=transaction(change))
+    return ApiJSONResponse(status_code=201, content=transaction(change))
 
 
 @app.post("/auth/login")
@@ -755,7 +760,7 @@ def availability(request: Request) -> dict[str, Any]:
 
 
 @app.post("/reservations", status_code=201)
-async def create_reservation(request: Request) -> JSONResponse:
+async def create_reservation(request: Request) -> ApiJSONResponse:
     body = await body_object(request)
 
     def change(state: dict[str, Any]) -> tuple[int, dict[str, Any]]:
@@ -784,7 +789,7 @@ async def create_reservation(request: Request) -> JSONResponse:
         return 201, response
 
     status, response = transaction(change)
-    return JSONResponse(status_code=status, content=response)
+    return ApiJSONResponse(status_code=status, content=response)
 
 
 @app.get("/reservations")
@@ -845,7 +850,7 @@ async def amend_reservation(reference: str, request: Request) -> dict[str, Any]:
 
 
 @app.post("/reservation-moves", status_code=201)
-async def move_reservations(request: Request) -> JSONResponse:
+async def move_reservations(request: Request) -> ApiJSONResponse:
     body = await body_object(request)
 
     def change(state: dict[str, Any]) -> tuple[int, dict[str, Any]]:
@@ -909,4 +914,4 @@ async def move_reservations(request: Request) -> JSONResponse:
         return 201, response
 
     status, response = transaction(change)
-    return JSONResponse(status_code=status, content=response)
+    return ApiJSONResponse(status_code=status, content=response)
