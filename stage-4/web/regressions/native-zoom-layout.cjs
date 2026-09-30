@@ -135,6 +135,92 @@ module.exports = async function nativeZoomLayout(page, zoom) {
 
   const layouts = [];
   const homePanels = ["service-recovery", "replan-form", "replan-preview-submit", ".hours-days", ".policy-form", ".policy-hours", ".policy-day", ".policy-numbers", ".policy-capacities"];
+
+  const searchAt = async (date) => {
+    await page.getByTestId("date-input").fill(date);
+    await page.getByTestId("party-size-input").fill("4");
+    const response = page.waitForResponse((item) =>
+      item.url().includes("/availability?") && item.request().method() === "GET");
+    await page.getByTestId("search-button").click();
+    assert.equal((await response).status(), 200, "native-zoom search succeeds");
+    await page.waitForFunction(() => {
+      const button = document.querySelector('[data-testid="search-button"]');
+      return button && !button.disabled && document.querySelector('[data-testid="availability-grid"]');
+    });
+    await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+  };
+  const slotGeometry = (locator) => locator.evaluate((node) => {
+    const rect = node.getBoundingClientRect();
+    const headerBottom = document.querySelector(".site-header").getBoundingClientRect().bottom;
+    const hit = document.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2);
+    const group = node.closest(".table-group");
+    const label = group.querySelector(".table-group-label");
+    const cells = group.querySelector(".time-cells");
+    const viewport = group.closest(".results-viewport");
+    return {
+      bounds: [Math.round(rect.left), Math.round(rect.top), Math.round(rect.right), Math.round(rect.bottom)],
+      headerBottom: Math.round(headerBottom),
+      viewportHeight: innerHeight,
+      layout: { groupDisplay: getComputedStyle(group).display,
+        label: [Math.round(label.getBoundingClientRect().left), Math.round(label.getBoundingClientRect().width)],
+        cells: [Math.round(cells.getBoundingClientRect().left), Math.round(cells.getBoundingClientRect().width), cells.clientWidth, cells.scrollWidth, cells.scrollLeft],
+        results: [Math.round(viewport.getBoundingClientRect().left), Math.round(viewport.getBoundingClientRect().width), viewport.clientWidth, viewport.scrollWidth, viewport.scrollLeft] },
+      belowHeader: rect.top >= headerBottom,
+      inViewport: rect.left >= 0 && rect.right <= innerWidth && rect.top >= 0 && rect.bottom <= innerHeight,
+      centerHitsTarget: hit === node || node.contains(hit),
+      focused: document.activeElement === node,
+    };
+  });
+
+  const slotFailures = [];
+  await page.setViewportSize({ width: 375, height: 812 });
+  const pointerDay = new Date(`${booking.starts_at_local.slice(0, 10)}T12:00:00Z`);
+  pointerDay.setUTCDate(pointerDay.getUTCDate() - 26);
+  const pointerDate = pointerDay.toISOString().slice(0, 10);
+  const keyboardDay = new Date(`${pointerDate}T12:00:00Z`);
+  keyboardDay.setUTCDate(keyboardDay.getUTCDate() + 1);
+  const accessByTheme = [];
+  for (const theme of ["light", "dark"]) {
+    await page.goto(base);
+    const activeTheme = await page.locator("html").getAttribute("data-theme");
+    if (activeTheme !== theme) await page.getByTestId("theme-toggle").click();
+    await searchAt(pointerDate);
+    const pointerSlot = page.getByTestId("slot-t_native_close-19:00");
+    let clickError = "";
+    try { await pointerSlot.click({ timeout: 5000 }); } catch (error) { clickError = String(error.message).split("\n")[0]; }
+    const pointerSelected = (await pointerSlot.getAttribute("aria-pressed")) === "true";
+    if (clickError || !pointerSelected) slotFailures.push(`${theme} pointer slot selection failed (${clickError || "slot was not selected"})`);
+
+    await page.goto(base);
+    await searchAt(keyboardDay.toISOString().slice(0, 10));
+    const focusedAfterSearch = await page.evaluate(() => document.activeElement?.dataset?.testid || null);
+    const keyboardSlot = page.getByTestId("slot-t_native_close-19:00");
+    let keyboardReached = false;
+    let tabStops = 0;
+    if (focusedAfterSearch === "search-button") {
+      for (; tabStops < 120; tabStops++) {
+        await page.keyboard.press("Tab");
+        if (await page.evaluate(() => document.activeElement?.dataset?.testid || null) === "slot-t_native_close-19:00") {
+          keyboardReached = true;
+          tabStops++;
+          break;
+        }
+      }
+    }
+    const keyboardState = keyboardReached ? await slotGeometry(keyboardSlot) : null;
+    if (!keyboardReached || !keyboardState?.belowHeader || !keyboardState.inViewport) {
+      slotFailures.push(`${theme} keyboard slot was not reached fully visible below the sticky header (start=${focusedAfterSearch}, tabs=${tabStops}, state=${JSON.stringify(keyboardState)})`);
+    }
+    if (keyboardReached) {
+      await page.keyboard.press("Enter");
+      if (await keyboardSlot.getAttribute("aria-pressed") !== "true") slotFailures.push(`${theme} Enter did not select the focused slot`);
+      const reserve = page.getByTestId("booking-submit");
+      if (!(await reserve.count())) slotFailures.push(`${theme} slot selection did not expose the Reserve action`);
+    }
+    accessByTheme.push({ theme, pointerSelected, clickError, focusedAfterSearch, keyboardState, tabStops });
+  }
+  assert.deepEqual(slotFailures, [], `native-zoom slot access: ${JSON.stringify({ accessByTheme, slotFailures })}`);
+
   layouts.push(await sample("recovery light", homePanels));
   await page.getByTestId("theme-toggle").evaluate((button) => button.click());
   layouts.push(await sample("recovery dark", homePanels));
@@ -204,6 +290,7 @@ module.exports = async function nativeZoomLayout(page, zoom) {
     ok: layouts.every((layout) => !layout.horizontalOverflow),
     exactZoom: await zoom.getZoom(),
     staleFeedback: feedback,
+    slotAccess: accessByTheme,
     layouts,
   };
 };

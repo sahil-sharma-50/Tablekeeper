@@ -299,6 +299,7 @@ function HomePage({ signedIn }: { signedIn: boolean }) {
   const [authError, setAuthError] = useState(Boolean(saved.selected && !token()));
   const [restoreError, setRestoreError] = useState("");
   const searchSequence = useRef(0);
+  const searchButtonRef = useRef<HTMLButtonElement>(null);
   const reviewRef = useRef<HTMLElement>(null);
   const bookingErrorRef = useRef<HTMLParagraphElement>(null);
 
@@ -376,6 +377,7 @@ function HomePage({ signedIn }: { signedIn: boolean }) {
   const runSearch = async (event?: FormEvent, clearSelection = true, force = false) => {
     event?.preventDefault();
     if (!restaurant || !date || party < 1 || (!force && (attempt?.status === "uncertain" || attempt?.status === "sending"))) return;
+    const restoreSearchFocus = document.activeElement === searchButtonRef.current;
     const sequence = ++searchSequence.current;
     setSearching(true);
     setSearchError("");
@@ -388,7 +390,12 @@ function HomePage({ signedIn }: { signedIn: boolean }) {
     } catch (error) {
       if (sequence === searchSequence.current) setSearchError(error instanceof Error ? error.message : "Availability could not be loaded.");
     } finally {
-      if (sequence === searchSequence.current) setSearching(false);
+      if (sequence === searchSequence.current) {
+        setSearching(false);
+        if (restoreSearchFocus) requestAnimationFrame(() => {
+          if (document.activeElement === document.body) searchButtonRef.current?.focus({ preventScroll: true });
+        });
+      }
     }
   };
 
@@ -419,7 +426,11 @@ function HomePage({ signedIn }: { signedIn: boolean }) {
 
   const book = async () => {
     if (!selected || !restaurant || !currentBody) return;
-    if (!token()) { setAuthError(true); return; }
+    if (!token()) {
+      setAuthError(true);
+      requestAnimationFrame(() => revealFeedback(document.getElementById("auth-error")));
+      return;
+    }
     if (attempt?.status === "sending") return;
     if (attempt?.status === "uncertain") {
       await sendAttempt(attempt);
@@ -482,7 +493,7 @@ function HomePage({ signedIn }: { signedIn: boolean }) {
         <label>Restaurant<select data-testid="restaurant-select" value={restaurantId} disabled={loadingRestaurants || locked} onChange={(event) => { setRestaurantId(event.target.value); setSearchField(); setSelected(null); }} required>{restaurants.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label>
         <label>Date<input data-testid="date-input" type="date" value={date} disabled={locked} onChange={(event) => { setDate(event.target.value); setSearchField(); setSelected(null); }} required /></label>
         <label>Party size<input data-testid="party-size-input" type="number" min="1" step="1" value={party} disabled={locked} onChange={(event) => { setParty(Number(event.target.value)); setSearchField(); setSelected(null); }} required /></label>
-        <button className="button button-primary search-button" data-testid="search-button" type="submit" disabled={loadingRestaurants || !restaurant || searching || locked}>{searching ? "Finding tables…" : "Find a table"}<span aria-hidden="true">↗</span></button>
+        <button ref={searchButtonRef} className="button button-primary search-button" data-testid="search-button" type="submit" disabled={loadingRestaurants || !restaurant || searching || locked}>{searching ? "Finding tables…" : "Find a table"}<span aria-hidden="true">↗</span></button>
       </form>
       {loadingRestaurants && <p className="inline-status" role="status">Loading restaurant choices…</p>}
       {!loadingRestaurants && !restaurants.length && <p className="empty-state">No restaurants are available yet.</p>}
@@ -503,7 +514,13 @@ function HomePage({ signedIn }: { signedIn: boolean }) {
               const reasons = isAvailable || !restaurant ? [] : unavailabilityReason(option.ids, slot, party, restaurant, policies);
               const reasonLabel = reasons.length > 1 ? "Capacity + busy" : reasons[0]?.startsWith("Party") ? "Capacity" : reasons.length ? "Occupied" : "";
               const reasonText = reasons.join("; ");
-              return <button key={slot.starts_at_local} type="button" className={`time-cell${isSelected ? " is-selected" : ""}`} data-testid={`slot-${option.ids.join("+")}-${time}`} data-available={String(isAvailable)} aria-label={`${option.label}, ${time}, ${isAvailable ? "available" : `unavailable: ${reasonText}`}`} aria-pressed={isSelected} title={isAvailable ? `Select ${time}` : reasonText} disabled={!isAvailable || locked} onClick={() => choose({ tableIds: option.ids, startsAtLocal: slot.starts_at_local })}>{time}{reasonLabel && <small className="cell-reason" aria-hidden="true">{reasonLabel}</small>}</button>;
+              return <button key={slot.starts_at_local} type="button" className={`time-cell${isSelected ? " is-selected" : ""}`} data-testid={`slot-${option.ids.join("+")}-${time}`} data-available={String(isAvailable)} aria-label={`${option.label}, ${time}, ${isAvailable ? "available" : `unavailable: ${reasonText}`}`} aria-pressed={isSelected} title={isAvailable ? `Select ${time}` : reasonText} disabled={!isAvailable || locked} onFocus={(event) => {
+                const rect = event.currentTarget.getBoundingClientRect();
+                const headerBottom = document.querySelector(".site-header")?.getBoundingClientRect().bottom || 0;
+                if (rect.top < headerBottom || rect.bottom > window.innerHeight || rect.left < 0 || rect.right > window.innerWidth) {
+                  event.currentTarget.scrollIntoView({ behavior: "instant", block: "center", inline: "nearest" });
+                }
+              }} onClick={() => choose({ tableIds: option.ids, startsAtLocal: slot.starts_at_local })}>{time}{reasonLabel && <small className="cell-reason" aria-hidden="true">{reasonLabel}</small>}</button>;
             })}</div>
           </section>)}
         </div>
