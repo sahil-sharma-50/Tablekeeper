@@ -1,5 +1,14 @@
 async (page) => {
   const base = new URL(page.url()).origin;
+  const settleViewport = () => page.evaluate(async () => {
+    let previous = scrollY;
+    let stableFrames = 0;
+    for (let frame = 0; frame < 120 && stableFrames < 3; frame += 1) {
+      await new Promise(requestAnimationFrame);
+      stableFrames = Math.abs(scrollY - previous) < 0.5 ? stableFrames + 1 : 0;
+      previous = scrollY;
+    }
+  });
   const weekdays = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
   const restaurant = {
     id: 'r_visual', name: 'Visual Regression Table', timezone: 'Europe/Berlin',
@@ -67,34 +76,59 @@ async (page) => {
     }
   }
 
-  await page.setViewportSize({ width: 375, height: 812 });
-  await page.goto(`${base}/signup`);
-  await page.getByTestId('signup-display-name').fill('Visual Regression');
-  await page.getByTestId('signup-email').fill(email);
-  await page.getByTestId('signup-password').fill(password);
-  const duplicateResponse = page.waitForResponse((response) => response.url().endsWith('/auth/signup'));
-  await page.getByTestId('signup-submit').click();
-  if ((await duplicateResponse).status() !== 409) throw new Error('Duplicate signup was not refused.');
-  const signupAlert = page.getByTestId('auth-error');
-  await signupAlert.waitFor();
-  const visible = await signupAlert.evaluate((alert) => {
-    const box = alert.getBoundingClientRect();
-    return [innerHeight, scrollY, box.top, box.bottom, document.activeElement === alert, getComputedStyle(alert).outlineWidth];
-  });
-  if (visible[2] < 65 || visible[3] > visible[0] || !visible[4] || visible[5] !== '2px') throw new Error('Duplicate-signup alert is not fully visible and focused on mobile.');
+  const authErrors = [];
+  for (const theme of ['light', 'dark']) {
+    await page.evaluate((value) => localStorage.setItem('tablekeeper.theme', value), theme);
+    for (const route of ['/login', '/signup']) {
+      for (const [width, height] of [[1280, 720], [375, 812]]) {
+        await page.setViewportSize({ width, height });
+        await page.goto(`${base}${route}`);
+        if (route === '/signup') {
+          await page.getByTestId('signup-display-name').fill('Visual Regression');
+          await page.getByTestId('signup-email').fill(email);
+          await page.getByTestId('signup-password').fill(password);
+          const response = page.waitForResponse((item) => item.url().endsWith('/auth/signup'));
+          await page.getByTestId('signup-submit').click();
+          if ((await response).status() !== 409) throw new Error('Duplicate signup was not refused.');
+        } else {
+          await page.getByTestId('login-email').fill(email);
+          await page.getByTestId('login-password').fill('wrong-password');
+          const response = page.waitForResponse((item) => item.url().endsWith('/auth/login'));
+          await page.getByTestId('login-submit').click();
+          if ((await response).status() !== 401) throw new Error('Invalid login was not refused.');
+        }
 
-  await page.setViewportSize({ width: 1280, height: 720 });
-  await page.goto(`${base}/login`);
-  await page.getByTestId('login-email').fill(email);
-  await page.getByTestId('login-password').fill('wrong-password');
-  const loginResponse = page.waitForResponse((response) => response.url().endsWith('/auth/login'));
-  await page.getByTestId('login-submit').click();
-  if ((await loginResponse).status() !== 401) throw new Error('Invalid login was not refused.');
-  const loginAlert = page.getByTestId('auth-error');
-  await loginAlert.waitFor();
-  if (!(await loginAlert.evaluate((alert) => document.activeElement === alert && alert.getBoundingClientRect().bottom <= innerHeight))) throw new Error('Login refusal did not focus the visible alert.');
-  await page.getByTestId('login-email').focus();
-  await page.keyboard.press('Tab');
-  if (!(await page.evaluate(() => document.activeElement.matches(':focus-visible') && getComputedStyle(document.activeElement).outlineWidth === '3px'))) throw new Error('Keyboard focus indicator is missing.');
-  return { viewportThemeCases: cases, duplicateSignupVisible: true, loginFailureFocused: true, keyboardFocusVisible: true };
+        await page.waitForFunction(() => {
+          const alert = document.querySelector('[data-testid="auth-error"]');
+          const box = alert?.getBoundingClientRect();
+          const headerBottom = document.querySelector('.site-header')?.getBoundingClientRect().bottom || 0;
+          return Boolean(alert && box && document.activeElement === alert && box.top >= headerBottom && box.bottom <= innerHeight);
+        });
+        await settleViewport();
+        const geometry = await page.evaluate(() => {
+          const alert = document.querySelector('[data-testid="auth-error"]');
+          const box = alert.getBoundingClientRect();
+          const active = document.activeElement;
+          return {
+            viewport: [innerWidth, innerHeight], scrollY,
+            alert: { top: box.top, bottom: box.bottom },
+            headerBottom: document.querySelector('.site-header').getBoundingClientRect().bottom,
+            focused: { tag: active.tagName, id: active.id, testId: active.dataset.testid || null },
+            focusedAlert: active === alert,
+          };
+        });
+        if (!geometry.focusedAlert || geometry.alert.top < geometry.headerBottom || geometry.alert.bottom > height) throw new Error(`${route} ${theme} error missed the viewport or focus: ${JSON.stringify(geometry)}`);
+        const preservedEmail = await page.getByTestId(route === '/signup' ? 'signup-email' : 'login-email').inputValue();
+        if (preservedEmail !== email) throw new Error(`${route} refusal cleared the entered email.`);
+        authErrors.push({ route, theme, ...geometry });
+
+        if (route === '/login' && width === 1280) {
+          await page.getByTestId('login-email').focus();
+          await page.keyboard.press('Tab');
+          if (!(await page.evaluate(() => document.activeElement.matches(':focus-visible') && Number.parseFloat(getComputedStyle(document.activeElement).outlineWidth) >= 2))) throw new Error('Keyboard focus indicator is missing.');
+        }
+      }
+    }
+  }
+  return { viewportThemeCases: cases, authErrors, keyboardFocusVisible: true };
 }

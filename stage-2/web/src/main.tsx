@@ -56,6 +56,11 @@ const WEEKDAYS = [
 ];
 
 function token() { return localStorage.getItem(AUTH_TOKEN); }
+function revealFeedback(element: HTMLElement | null) {
+  if (!element) return;
+  element.focus({ preventScroll: true });
+  element.scrollIntoView({ behavior: "instant", block: "nearest" });
+}
 function localDate(date: Date) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 }
@@ -165,6 +170,7 @@ function HomePage({ signedIn }: { signedIn: boolean }) {
   const [restoreError, setRestoreError] = useState("");
   const searchSequence = useRef(0);
   const reviewRef = useRef<HTMLElement>(null);
+  const bookingErrorRef = useRef<HTMLParagraphElement>(null);
 
   useEffect(() => {
     let current = true;
@@ -194,6 +200,9 @@ function HomePage({ signedIn }: { signedIn: boolean }) {
     if (attempt) sessionStorage.setItem(ATTEMPT_KEY, JSON.stringify(attempt));
     else sessionStorage.removeItem(ATTEMPT_KEY);
   }, [attempt]);
+  useEffect(() => {
+    if (attempt?.status === "rejected" && !searching) revealFeedback(bookingErrorRef.current);
+  }, [searching, attempt?.status, attempt?.key, attempt?.message]);
 
   const options = useMemo(() => {
     if (!restaurant) return [] as { ids: string[]; label: string; capacity: number }[];
@@ -357,9 +366,9 @@ function HomePage({ signedIn }: { signedIn: boolean }) {
           {!signedIn && <><a className="button button-outline sign-in-action" href="/login?next=%2F">Sign in</a>{authError && <p id="auth-error" className="message message-error auth-panel-error" role="alert" tabIndex={-1} data-testid="auth-error">Please sign in before completing your reservation. Your table selection is saved.</p>}</>}
           {restoreError && <p className="message message-error" role="alert">{restoreError}</p>}
           {attempt?.status === "uncertain" && <p className="message message-warning" role="status" data-testid="booking-uncertain">{attempt.message}</p>}
-          {attempt?.status === "rejected" && <p className="message message-error" role="alert" data-testid="booking-error">{attempt.message}</p>}
+          {attempt?.status === "rejected" && <p ref={bookingErrorRef} id="booking-error" className="message message-error booking-error" role="alert" tabIndex={-1} data-testid="booking-error">{attempt.message}</p>}
           {attempt?.status === "confirmed" && attempt.receipt && currentBody && JSON.stringify(attempt.body) === JSON.stringify(currentBody) && <div className="receipt" role="status" data-testid="confirmation"><span className="receipt-kicker">Reservation confirmed</span><strong data-testid="confirmation-reference">{attempt.receipt.reference}</strong><span data-testid="confirmation-details">{restaurants.find((item) => item.id === attempt.receipt?.restaurant_id)?.name || attempt.receipt.restaurant_id} · {tableLabel(tableIds(attempt.receipt), restaurant)} · {attempt.receipt.starts_at_local.replace("T", " ")}</span><span data-testid="confirmation-tables">{tableLabel(tableIds(attempt.receipt), restaurant)}</span></div>}
-          <button className="button button-primary review-submit" data-testid="booking-submit" type="submit" disabled={!selected || attempt?.status === "sending"} aria-describedby={authError ? "auth-error" : undefined}>{attempt?.status === "sending" ? "Saving your table…" : attempt?.status === "uncertain" ? "Retry reservation" : "Reserve this table"}<span aria-hidden="true">↗</span></button>
+          <button className="button button-primary review-submit" data-testid="booking-submit" type="submit" disabled={!selected || attempt?.status === "sending"} aria-describedby={authError ? "auth-error" : attempt?.status === "rejected" ? "booking-error" : undefined}>{attempt?.status === "sending" ? "Saving your table…" : attempt?.status === "uncertain" ? "Retry reservation" : "Reserve this table"}<span aria-hidden="true">↗</span></button>
           <p className="review-caption">Nothing is held until the reservation is confirmed.</p>
         </form>
       </> : <div className="review-empty"><span className="review-icon"><img src="/assets/tools-kitchen-2.svg" alt="" /></span><p>Select an available time to review your reservation here.</p><small>Your date, party size and chosen table stay together.</small></div>}
@@ -373,7 +382,7 @@ function AuthPage({ mode }: { mode: "login" | "signup" }) {
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
   const errorRef = useRef<HTMLParagraphElement>(null);
-  useEffect(() => { if (error) errorRef.current?.focus(); }, [error]);
+  useEffect(() => { if (error) revealFeedback(errorRef.current); }, [error]);
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError("");

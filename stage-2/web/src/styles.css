@@ -177,8 +177,8 @@ input:hover, select:hover { border-color: var(--olive); }
 .auth-card form { gap: 11px; }
 .auth-submit { width: 100%; margin-top: 0; }
 .auth-switch { margin: 12px 0 0; color: var(--muted); font-size: .84rem; text-align: center; }
-.auth-feedback { scroll-margin: 88px 0 16px; }
-.auth-feedback:focus { outline: 2px solid var(--rust); outline-offset: 2px; }
+.auth-feedback, .booking-error { scroll-margin: 88px 0 16px; }
+.auth-feedback:focus, .booking-error:focus { outline: 2px solid var(--rust); outline-offset: 2px; }
 .auth-switch a { color: var(--olive); font-weight: 700; }
 
 .lookup-page { min-height: calc(100vh - 150px); display: grid; grid-template-columns: 1fr .9fr; align-items: center; gap: clamp(26px, 7vw, 90px); padding-top: 36px; padding-bottom: 38px; }

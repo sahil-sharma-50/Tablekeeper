@@ -1,5 +1,14 @@
 async (page) => {
   const base = new URL(page.url()).origin;
+  const settleViewport = () => page.evaluate(async () => {
+    let previous = scrollY;
+    let stableFrames = 0;
+    for (let frame = 0; frame < 120 && stableFrames < 3; frame += 1) {
+      await new Promise(requestAnimationFrame);
+      stableFrames = Math.abs(scrollY - previous) < 0.5 ? stableFrames + 1 : 0;
+      previous = scrollY;
+    }
+  });
   const weekdays = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
   const restaurant = {
     id: 'r_combo', name: 'Booking Recovery Table', timezone: 'Europe/Berlin',
@@ -23,6 +32,50 @@ async (page) => {
     return response.status;
   }, { users: [], restaurants: [restaurant], reservations: [] });
   if (reset !== 204) throw new Error(`Disposable fixture reset returned ${reset}.`);
+
+  const signedOutFeedback = [];
+  for (const theme of ['light', 'dark']) {
+    for (const [width, height] of [[375, 812], [1280, 720]]) {
+      await page.setViewportSize({ width, height });
+      await page.evaluate((value) => {
+        localStorage.setItem('tablekeeper.theme', value);
+        sessionStorage.clear();
+      }, theme);
+      await page.goto(`${base}/`);
+      await page.getByTestId('date-input').fill('2026-10-14');
+      await page.getByTestId('party-size-input').fill('4');
+      const availability = page.waitForResponse((response) => response.url().includes('/availability?'));
+      await page.getByTestId('search-button').click();
+      if ((await availability).status() !== 200) throw new Error('Signed-out availability search failed.');
+      await page.getByTestId('slot-t_c+t_a-18:00').click();
+      await page.waitForFunction(() => {
+        const alert = document.querySelector('[data-testid="auth-error"]');
+        const signIn = document.querySelector('.sign-in-action');
+        const button = document.querySelector('[data-testid="booking-submit"]');
+        const box = alert?.getBoundingClientRect();
+        const headerBottom = document.querySelector('.site-header')?.getBoundingClientRect().bottom || 0;
+        return Boolean(alert && signIn && button && box && document.activeElement === alert && box.top >= headerBottom && box.bottom <= innerHeight && !button.disabled && (signIn.compareDocumentPosition(alert) & Node.DOCUMENT_POSITION_FOLLOWING));
+      });
+      await settleViewport();
+      const geometry = await page.evaluate(() => {
+        const alert = document.querySelector('[data-testid="auth-error"]');
+        const box = alert.getBoundingClientRect();
+        const active = document.activeElement;
+        const button = document.querySelector('[data-testid="booking-submit"]');
+        return {
+          viewport: [innerWidth, innerHeight], scrollY,
+          alert: { top: box.top, bottom: box.bottom },
+          headerBottom: document.querySelector('.site-header').getBoundingClientRect().bottom,
+      focused: { tag: active.tagName, id: active.id, testId: active.dataset.testid || null },
+      focusedAlert: active === alert, reserveEnabled: !button.disabled,
+      outline: getComputedStyle(alert).outlineWidth,
+        };
+      });
+      if (!geometry.focusedAlert || geometry.alert.top < geometry.headerBottom || geometry.alert.bottom > height || !geometry.reserveEnabled) throw new Error(`Signed-out reserve feedback missed the viewport or action: ${JSON.stringify(geometry)}`);
+      signedOutFeedback.push({ theme, ...geometry });
+    }
+  }
+  await page.evaluate(() => sessionStorage.clear());
 
   const email = `booking-${Date.now()}@example.invalid`;
   const password = 'BookingRegression-Only-2026';
@@ -59,6 +112,12 @@ async (page) => {
   await page.getByTestId('booking-submit').click();
   if ((await refused).status() !== 409) throw new Error('The selected 19:00 booking was not refused.');
   await page.getByTestId('booking-error').waitFor();
+  await page.waitForFunction(() => {
+    const alert = document.querySelector('[data-testid="booking-error"]');
+    const box = alert?.getBoundingClientRect();
+    const headerBottom = document.querySelector('.site-header')?.getBoundingClientRect().bottom || 0;
+    return Boolean(alert && box && document.activeElement === alert && box.top >= headerBottom && box.bottom <= innerHeight);
+  });
   await page.waitForFunction(() => document.querySelector('[data-testid="slot-t_d-19:00"]')?.disabled === true);
   if (!(await page.getByTestId('slot-t_d-21:00').isEnabled())) throw new Error('The alternate 21:00 slot is not available.');
   await page.getByTestId('slot-t_d-21:00').click();
@@ -77,7 +136,53 @@ async (page) => {
   await page.getByTestId('confirmation').waitFor();
   const confirmed = await page.evaluate(() => JSON.parse(sessionStorage.getItem('tablekeeper.bookingAttempt')));
   if (confirmed.status !== 'confirmed' || confirmed.key !== uncertain.key || JSON.stringify(confirmed.body) !== JSON.stringify(uncertain.body)) throw new Error('Retry changed the uncertain request identity.');
-  await page.getByTestId('slot-t_c+t_a-19:00').click();
+
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.getByTestId('slot-t_c+t_a-18:00').click();
+  const pairCompetitorStatus = await page.evaluate(async () => {
+    const response = await fetch('/reservations', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('tablekeeper.token')}`,
+        'Idempotency-Key': `pair-competitor-${Date.now()}`,
+      },
+      body: JSON.stringify({ restaurant_id: 'r_combo', table_ids: ['t_c', 't_a'], starts_at_local: '2026-10-14T18:00', party_size: 4 }),
+    });
+    return response.status;
+  });
+  if (pairCompetitorStatus !== 201) throw new Error(`Second-client pair booking returned ${pairCompetitorStatus}.`);
+  const pairRefused = page.waitForResponse((response) => response.url().endsWith('/reservations') && response.request().method() === 'POST');
+  await page.getByTestId('booking-submit').click();
+  if ((await pairRefused).status() !== 409) throw new Error('Competing pair reservation was not refused.');
+  await page.waitForFunction(() => document.querySelector('[data-testid="slot-t_c+t_a-18:00"]')?.disabled === true);
+  await page.waitForFunction(() => {
+    const alert = document.querySelector('[data-testid="booking-error"]');
+    const box = alert?.getBoundingClientRect();
+    const headerBottom = document.querySelector('.site-header')?.getBoundingClientRect().bottom || 0;
+    return Boolean(alert && box && document.activeElement === alert && box.top >= headerBottom && box.bottom <= innerHeight);
+  });
+  await settleViewport();
+  const refusalGeometry = await page.evaluate(() => {
+    const alert = document.querySelector('[data-testid="booking-error"]');
+    const box = alert.getBoundingClientRect();
+    const active = document.activeElement;
+    return {
+      viewport: [innerWidth, innerHeight], scrollY,
+      alert: { top: box.top, bottom: box.bottom },
+      headerBottom: document.querySelector('.site-header').getBoundingClientRect().bottom,
+      focused: { tag: active.tagName, id: active.id, testId: active.dataset.testid || null },
+      focusedAlert: active === alert,
+      outline: getComputedStyle(alert).outlineWidth,
+    };
+  });
+  if (!refusalGeometry.focusedAlert || refusalGeometry.alert.top < refusalGeometry.headerBottom || refusalGeometry.alert.bottom > 812) throw new Error(`Booking refusal missed the mobile viewport: ${JSON.stringify(refusalGeometry)}`);
+  const mobileError = await page.getByTestId('booking-error').evaluate((alert) => [alert.getAttribute('role'), alert.id, getComputedStyle(alert).outlineWidth]);
+  const retainedSearch = await page.evaluate(() => [document.querySelector('[data-testid="date-input"]').value, document.querySelector('[data-testid="party-size-input"]').value, document.querySelector('[data-testid="booking-submit"]').getAttribute('aria-describedby')]);
+  if (mobileError[0] !== 'alert' || mobileError[1] !== 'booking-error' || Number.parseFloat(mobileError[2]) <= 0 || retainedSearch[0] !== '2026-10-14' || retainedSearch[1] !== '4' || retainedSearch[2] !== 'booking-error') throw new Error('Mobile pair refusal lacks visible focused feedback or lost its search details.');
+  if (!(await page.getByTestId('slot-t_c+t_a-21:00').isEnabled())) throw new Error('The alternate C + A slot is not available.');
+  await page.getByTestId('slot-t_c+t_a-21:00').click();
+  await page.getByTestId('booking-error').waitFor({ state: 'detached' });
   const pairResponse = page.waitForResponse((response) => response.url().endsWith('/reservations') && response.request().method() === 'POST');
   await page.getByTestId('booking-submit').click();
   if ((await pairResponse).status() !== 201) throw new Error('The declared C + A pair was not reserved.');
@@ -103,5 +208,5 @@ async (page) => {
   const cancelledLabel = (await page.getByTestId('reservation-status').innerText()).trim();
   if (cancelledLabel !== 'cancelled') throw new Error(`Cancelled pair status was not shown: ${JSON.stringify(cancelledLabel)}`);
   await page.getByTestId('reservation-cancel-button').waitFor({ state: 'detached' });
-  return { competitorStatus, refusedStatus: 409, staleAlertCleared: true, uncertaintyRetrySameBodyAndKey: true, pairConfirmationLookupLabels: pairLabel, singleClickCancel: true };
+  return { competitorStatus, refusedStatus: 409, staleAlertCleared: true, uncertaintyRetrySameBodyAndKey: true, signedOutFeedback, mobilePairCompetitorStatus: pairCompetitorStatus, mobileRefusalGeometry: refusalGeometry, pairConfirmationLookupLabels: pairLabel, singleClickCancel: true };
 }
