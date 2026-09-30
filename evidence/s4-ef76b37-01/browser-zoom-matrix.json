@@ -1,0 +1,529 @@
+{
+    "source_sha":  "ef76b375e4483da8c46f54220b2ef687c3a9b9e8",
+    "image_id":  "sha256:2ee6b7ccaaf9e0a45345f6b1c102482086922e919bacfdb14ecf3fc26b524830",
+    "limits":  {
+                   "cpus":  2,
+                   "memory":  "2 GiB"
+               },
+    "browser":  "151.0.7922.34",
+    "native_zoom":  {
+                        "observed":  2,
+                        "css_viewport":  [
+                                             640,
+                                             360
+                                         ],
+                        "outer_window":  [
+                                             1280,
+                                             720
+                                         ],
+                        "api":  "chrome.tabs.getZoom",
+                        "dpr":  2
+                    },
+    "baseline_scenario_passed":  true,
+    "native_layout":  {
+                          "overflow_count":  0,
+                          "samples":  [
+                                          {
+                                              "label":  "replan 375x812 light",
+                                              "zoom":  2,
+                                              "css_viewport":  [
+                                                                   187,
+                                                                   406
+                                                               ],
+                                              "dpr":  2,
+                                              "theme":  "light",
+                                              "document_width":  187,
+                                              "client_width":  187,
+                                              "horizontal_overflow":  false
+                                          },
+                                          {
+                                              "label":  "replan 768x1024 light",
+                                              "zoom":  2,
+                                              "css_viewport":  [
+                                                                   384,
+                                                                   512
+                                                               ],
+                                              "dpr":  2,
+                                              "theme":  "light",
+                                              "document_width":  384,
+                                              "client_width":  384,
+                                              "horizontal_overflow":  false
+                                          },
+                                          {
+                                              "label":  "replan 1280x720 light",
+                                              "zoom":  2,
+                                              "css_viewport":  [
+                                                                   640,
+                                                                   360
+                                                               ],
+                                              "dpr":  2,
+                                              "theme":  "light",
+                                              "document_width":  640,
+                                              "client_width":  640,
+                                              "horizontal_overflow":  false
+                                          },
+                                          {
+                                              "label":  "replan 1440x900 light",
+                                              "zoom":  2,
+                                              "css_viewport":  [
+                                                                   720,
+                                                                   450
+                                                               ],
+                                              "dpr":  2,
+                                              "theme":  "light",
+                                              "document_width":  720,
+                                              "client_width":  720,
+                                              "horizontal_overflow":  false
+                                          },
+                                          {
+                                              "label":  "series 375x812 light",
+                                              "zoom":  2,
+                                              "css_viewport":  [
+                                                                   187,
+                                                                   406
+                                                               ],
+                                              "dpr":  2,
+                                              "theme":  "light",
+                                              "document_width":  187,
+                                              "client_width":  187,
+                                              "horizontal_overflow":  false
+                                          },
+                                          {
+                                              "label":  "series 768x1024 light",
+                                              "zoom":  2,
+                                              "css_viewport":  [
+                                                                   384,
+                                                                   512
+                                                               ],
+                                              "dpr":  2,
+                                              "theme":  "light",
+                                              "document_width":  384,
+                                              "client_width":  384,
+                                              "horizontal_overflow":  false
+                                          },
+                                          {
+                                              "label":  "series 1280x720 light",
+                                              "zoom":  2,
+                                              "css_viewport":  [
+                                                                   640,
+                                                                   360
+                                                               ],
+                                              "dpr":  2,
+                                              "theme":  "light",
+                                              "document_width":  640,
+                                              "client_width":  640,
+                                              "horizontal_overflow":  false
+                                          },
+                                          {
+                                              "label":  "series 1440x900 light",
+                                              "zoom":  2,
+                                              "css_viewport":  [
+                                                                   720,
+                                                                   450
+                                                               ],
+                                              "dpr":  2,
+                                              "theme":  "light",
+                                              "document_width":  720,
+                                              "client_width":  720,
+                                              "horizontal_overflow":  false
+                                          },
+                                          {
+                                              "label":  "replan 375x812 dark",
+                                              "zoom":  2,
+                                              "css_viewport":  [
+                                                                   187,
+                                                                   406
+                                                               ],
+                                              "dpr":  2,
+                                              "theme":  "dark",
+                                              "document_width":  187,
+                                              "client_width":  187,
+                                              "horizontal_overflow":  false
+                                          },
+                                          {
+                                              "label":  "replan 768x1024 dark",
+                                              "zoom":  2,
+                                              "css_viewport":  [
+                                                                   384,
+                                                                   512
+                                                               ],
+                                              "dpr":  2,
+                                              "theme":  "dark",
+                                              "document_width":  384,
+                                              "client_width":  384,
+                                              "horizontal_overflow":  false
+                                          },
+                                          {
+                                              "label":  "replan 1280x720 dark",
+                                              "zoom":  2,
+                                              "css_viewport":  [
+                                                                   640,
+                                                                   360
+                                                               ],
+                                              "dpr":  2,
+                                              "theme":  "dark",
+                                              "document_width":  640,
+                                              "client_width":  640,
+                                              "horizontal_overflow":  false
+                                          },
+                                          {
+                                              "label":  "replan 1440x900 dark",
+                                              "zoom":  2,
+                                              "css_viewport":  [
+                                                                   720,
+                                                                   450
+                                                               ],
+                                              "dpr":  2,
+                                              "theme":  "dark",
+                                              "document_width":  720,
+                                              "client_width":  720,
+                                              "horizontal_overflow":  false
+                                          },
+                                          {
+                                              "label":  "series 375x812 dark",
+                                              "zoom":  2,
+                                              "css_viewport":  [
+                                                                   187,
+                                                                   406
+                                                               ],
+                                              "dpr":  2,
+                                              "theme":  "dark",
+                                              "document_width":  187,
+                                              "client_width":  187,
+                                              "horizontal_overflow":  false
+                                          },
+                                          {
+                                              "label":  "series 768x1024 dark",
+                                              "zoom":  2,
+                                              "css_viewport":  [
+                                                                   384,
+                                                                   512
+                                                               ],
+                                              "dpr":  2,
+                                              "theme":  "dark",
+                                              "document_width":  384,
+                                              "client_width":  384,
+                                              "horizontal_overflow":  false
+                                          },
+                                          {
+                                              "label":  "series 1280x720 dark",
+                                              "zoom":  2,
+                                              "css_viewport":  [
+                                                                   640,
+                                                                   360
+                                                               ],
+                                              "dpr":  2,
+                                              "theme":  "dark",
+                                              "document_width":  640,
+                                              "client_width":  640,
+                                              "horizontal_overflow":  false
+                                          },
+                                          {
+                                              "label":  "series 1440x900 dark",
+                                              "zoom":  2,
+                                              "css_viewport":  [
+                                                                   720,
+                                                                   450
+                                                               ],
+                                              "dpr":  2,
+                                              "theme":  "dark",
+                                              "document_width":  720,
+                                              "client_width":  720,
+                                              "horizontal_overflow":  false
+                                          }
+                                      ],
+                          "sample_count":  16
+                      },
+    "pointer":  {
+                    "viewport":  [
+                                     375,
+                                     812
+                                 ],
+                    "zoom":  2,
+                    "before":  {
+                                   "bounds":  [
+                                                  290,
+                                                  660,
+                                                  62,
+                                                  35
+                                              ],
+                                   "headerBottom":  125,
+                                   "viewport":  [
+                                                    187,
+                                                    406
+                                                ],
+                                   "dpr":  2,
+                                   "inViewport":  false,
+                                   "belowHeader":  true,
+                                   "focused":  false,
+                                   "focusVisible":  false,
+                                   "centerHitsTarget":  false,
+                                   "centerHitTag":  null,
+                                   "centerHitClass":  null,
+                                   "centerHitTestId":  null,
+                                   "enabled":  true,
+                                   "scrollY":  681
+                               },
+                    "after":  {
+                                  "bounds":  [
+                                                 107,
+                                                 67,
+                                                 62,
+                                                 35
+                                             ],
+                                  "headerBottom":  125,
+                                  "viewport":  [
+                                                   187,
+                                                   406
+                                               ],
+                                  "dpr":  2,
+                                  "inViewport":  true,
+                                  "belowHeader":  false,
+                                  "focused":  false,
+                                  "focusVisible":  false,
+                                  "centerHitsTarget":  false,
+                                  "centerHitTag":  "nav",
+                                  "centerHitClass":  "",
+                                  "centerHitTestId":  null,
+                                  "enabled":  true,
+                                  "scrollY":  1273
+                              },
+                    "selected":  false,
+                    "clickError":  "locator.click: Timeout 5000ms exceeded."
+                },
+    "keyboard":  {
+                     "viewport":  [
+                                      375,
+                                      812
+                                  ],
+                     "zoom":  2,
+                     "searchFocus":  {
+                                         "id":  "search-button",
+                                         "tag":  "BUTTON"
+                                     },
+                     "searchStatus":  200,
+                     "focusAfterSearch":  null,
+                     "tabStopsToSlot":  3,
+                     "reachedByTab":  true,
+                     "target":  {
+                                    "bounds":  [
+                                                   130,
+                                                   185,
+                                                   62,
+                                                   35
+                                               ],
+                                    "headerBottom":  125,
+                                    "viewport":  [
+                                                     187,
+                                                     406
+                                                 ],
+                                    "dpr":  2,
+                                    "inViewport":  false,
+                                    "belowHeader":  true,
+                                    "focused":  true,
+                                    "focusVisible":  true,
+                                    "centerHitsTarget":  true,
+                                    "centerHitTag":  "button",
+                                    "centerHitClass":  "time-cell",
+                                    "centerHitTestId":  "slot-t_2-19:00",
+                                    "enabled":  true,
+                                    "scrollY":  1155,
+                                    "selectedByEnter":  true
+                                },
+                     "bookingAction":  {
+                                           "reachedByTab":  true,
+                                           "tabsAfterSlot":  31,
+                                           "geometry":  {
+                                                            "bounds":  [
+                                                                           19,
+                                                                           181,
+                                                                           150,
+                                                                           44
+                                                                       ],
+                                                            "headerBottom":  125,
+                                                            "viewport":  [
+                                                                             187,
+                                                                             406
+                                                                         ],
+                                                            "dpr":  2,
+                                                            "inViewport":  true,
+                                                            "belowHeader":  true,
+                                                            "focused":  true,
+                                                            "focusVisible":  true,
+                                                            "centerHitsTarget":  true,
+                                                            "centerHitTag":  "button",
+                                                            "centerHitClass":  "button button-primary review-submit",
+                                                            "centerHitTestId":  "booking-submit",
+                                                            "enabled":  true,
+                                                            "scrollY":  1812
+                                                        }
+                                       }
+                 },
+    "stale_409":  {
+                      "header_bottom":  125,
+                      "visible":  true,
+                      "focused":  true,
+                      "bounds":  [
+                                     34,
+                                     170,
+                                     120,
+                                     154
+                                 ],
+                      "role":  "alert",
+                      "status":  409
+                  },
+    "logged_out_reserve":  [
+                               {
+                                   "theme":  "light",
+                                   "viewport":  [
+                                                    375,
+                                                    812
+                                                ],
+                                   "zoom":  1,
+                                   "slot_testid":  "slot-t_2-18:00",
+                                   "reserve_enabled":  true,
+                                   "panel_bounds":  [
+                                                        16,
+                                                        78,
+                                                        343,
+                                                        523
+                                                    ],
+                                   "reserve_bounds":  [
+                                                          35,
+                                                          502,
+                                                          305,
+                                                          44
+                                                      ],
+                                   "alert_bounds":  [
+                                                        35,
+                                                        407,
+                                                        305,
+                                                        59
+                                                    ],
+                                   "header_bottom":  65,
+                                   "alert_role":  "alert",
+                                   "alert_below_header":  true,
+                                   "alert_inside_panel":  true,
+                                   "alert_after_sign_in":  true,
+                                   "focused_when_shown":  true,
+                                   "reserve_described_by_alert":  true
+                               },
+                               {
+                                   "theme":  "dark",
+                                   "viewport":  [
+                                                    375,
+                                                    812
+                                                ],
+                                   "zoom":  1,
+                                   "slot_testid":  "slot-t_2-18:00",
+                                   "reserve_enabled":  true,
+                                   "panel_bounds":  [
+                                                        16,
+                                                        78,
+                                                        343,
+                                                        523
+                                                    ],
+                                   "reserve_bounds":  [
+                                                          35,
+                                                          502,
+                                                          305,
+                                                          44
+                                                      ],
+                                   "alert_bounds":  [
+                                                        35,
+                                                        407,
+                                                        305,
+                                                        59
+                                                    ],
+                                   "header_bottom":  65,
+                                   "alert_role":  "alert",
+                                   "alert_below_header":  true,
+                                   "alert_inside_panel":  true,
+                                   "alert_after_sign_in":  true,
+                                   "focused_when_shown":  true,
+                                   "reserve_described_by_alert":  true
+                               },
+                               {
+                                   "theme":  "light",
+                                   "viewport":  [
+                                                    1280,
+                                                    720
+                                                ],
+                                   "zoom":  1,
+                                   "slot_testid":  "slot-t_2-20:30",
+                                   "reserve_enabled":  true,
+                                   "panel_bounds":  [
+                                                        854,
+                                                        177,
+                                                        386,
+                                                        531
+                                                    ],
+                                   "reserve_bounds":  [
+                                                          877,
+                                                          605,
+                                                          340,
+                                                          44
+                                                      ],
+                                   "alert_bounds":  [
+                                                        877,
+                                                        510,
+                                                        340,
+                                                        59
+                                                    ],
+                                   "header_bottom":  76,
+                                   "alert_role":  "alert",
+                                   "alert_below_header":  true,
+                                   "alert_inside_panel":  true,
+                                   "alert_after_sign_in":  true,
+                                   "focused_when_shown":  true,
+                                   "reserve_described_by_alert":  true
+                               },
+                               {
+                                   "theme":  "dark",
+                                   "viewport":  [
+                                                    1280,
+                                                    720
+                                                ],
+                                   "zoom":  1,
+                                   "slot_testid":  "slot-t_2-18:00",
+                                   "reserve_enabled":  true,
+                                   "panel_bounds":  [
+                                                        854,
+                                                        177,
+                                                        386,
+                                                        531
+                                                    ],
+                                   "reserve_bounds":  [
+                                                          877,
+                                                          605,
+                                                          340,
+                                                          44
+                                                      ],
+                                   "alert_bounds":  [
+                                                        877,
+                                                        510,
+                                                        340,
+                                                        59
+                                                    ],
+                                   "header_bottom":  76,
+                                   "alert_role":  "alert",
+                                   "alert_below_header":  true,
+                                   "alert_inside_panel":  true,
+                                   "alert_after_sign_in":  true,
+                                   "focused_when_shown":  true,
+                                   "reserve_described_by_alert":  true
+                               }
+                           ],
+    "official":  {
+                     "provenance":  "working-tree",
+                     "run_id":  "bd0719a7957e4a55af500b342a173dd7",
+                     "report_revision":  "",
+                     "stages":  {
+                                    "s1":  "120/120",
+                                    "s3":  "7/7",
+                                    "s4":  "6/6",
+                                    "s2":  "25/25"
+                                }
+                 },
+    "outcome":  "Pointer selection is blocked at 200% zoom on outer 375x812: auto-scroll places the available cell beneath sticky navigation. Keyboard selection works."
+}

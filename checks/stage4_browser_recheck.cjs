@@ -506,7 +506,7 @@ module.exports = async function stage4BrowserRecheck(page, zoom) {
     sample.clippedOccurrences?.length);
   return {
     ok: layoutFailures.length === 0,
-    exactSource: "756c068eb1fc59319385f98071112e768383aa8a",
+    exactSource: "ef76b375e4483da8c46f54220b2ef687c3a9b9e8",
     nativeZoom: { required: 2, final: await zoom.getZoom() },
     authorization: { anonymousStatus, dinerStatus, controlsHiddenForDiner: true, noRolePicker: !rolePicker },
     stalePlan: { status: 409, role: staleGeometry.role, focused: staleGeometry.focused,
