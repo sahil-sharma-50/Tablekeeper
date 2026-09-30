@@ -375,6 +375,62 @@ def run_stage3(base):
     assert [row["table_id"] for row in moved["reservations"]] == ["t_2", "t_1"]
 
 
+def check_pair_order_noops(base):
+    data = fixture()
+    data["restaurants"][0]["combinable"] = [["t_1", "t_2"]]
+    expect_empty(base, "POST", "/_test/reset", data)
+    ada = login(base)
+    date = date_after(35)
+    _, original = make_booking(base, ada, date, table="t_3", party=6,
+                               key="pair-order-original")
+    paired = expect(base, "PATCH", f"/reservations/{original['reference']}",
+                    200, {"expected_revision": 1, "table_ids": ["t_2", "t_1"]}, ada)
+    assert paired["revision"] == 2 and paired["table_ids"] == ["t_1", "t_2"]
+    history_path = f"/reservations/{original['reference']}/history"
+    history_before = expect(base, "GET", history_path, 200, token=ada)
+    series = expect(base, "POST", "/series", 201,
+                    {"anchor_reference": original["reference"], "count": 2,
+                     "interval_weeks": 1}, ada, "pair-order-series")
+    series_path = f"/series/{series['series_id']}"
+    series_before = expect(base, "GET", series_path, 200, token=ada)
+    state_before = expect(base, "GET", "/_test/export", 200)["state"]
+
+    reversed_noop = expect(base, "PATCH", f"/reservations/{original['reference']}",
+                           200, {"expected_revision": 2,
+                                 "table_ids": ["t_2", "t_1"]}, ada)
+    assert reversed_noop == paired
+    assert expect(base, "GET", history_path, 200, token=ada) == history_before
+    assert expect(base, "GET", series_path, 200, token=ada) == series_before
+    assert expect(base, "GET", "/_test/export", 200)["state"] == state_before
+
+    moved = expect(base, "POST", "/reservation-moves", 201,
+                   {"moves": [{"reference": original["reference"],
+                               "expected_revision": 2,
+                               "table_ids": ["t_2", "t_1"]}]},
+                   ada, "pair-order-move-noop")
+    assert moved["reservations"] == [paired]
+    state_after_move = expect(base, "GET", "/_test/export", 200)["state"]
+    assert state_after_move["reservations"] == state_before["reservations"]
+    assert state_after_move["restaurants"] == state_before["restaurants"]
+    assert expect(base, "GET", history_path, 200, token=ada) == history_before
+    assert expect(base, "GET", series_path, 200, token=ada) == series_before
+
+    data = fixture()
+    data["restaurants"][0]["cancellation_cutoff_minutes"] = 10080
+    expect_empty(base, "POST", "/_test/reset", data)
+    ada = login(base)
+    _, booking = make_booking(base, ada, date_after(1), table="t_3", party=6,
+                             key="pair-order-cutoff")
+    path = f"/reservations/{booking['reference']}"
+    invalid_pair = {"table_ids": ["t_1", "t_3"]}
+    stale = expect(base, "PATCH", path, 409,
+                   {**invalid_pair, "expected_revision": 2}, ada)
+    assert stale["error"]["code"] == "stale_revision"
+    cutoff = expect(base, "PATCH", path, 409,
+                    {**invalid_pair, "expected_revision": 1}, ada)
+    assert cutoff["error"]["code"] == "cutoff_passed"
+
+
 def run_populated_upgrade(stage1, stage2, stage3):
     legacy = fixture(managed=False)
     expect_empty(stage1, "POST", "/_test/reset", legacy)
@@ -439,6 +495,7 @@ def main():
             for name, process in processes.items():
                 wait_ready(bases[name], process)
             run_stage3(bases["stage3"])
+            check_pair_order_noops(bases["stage3"])
             run_populated_upgrade(bases["stage1"], bases["stage2"], bases["stage3"])
         finally:
             for process in processes.values():

@@ -794,8 +794,10 @@ def _cutoff_passed(reservation: dict[str, Any], restaurant: dict[str, Any]) -> b
     return delta_us <= cutoff * 60 * 1_000_000
 
 
-def _patch_inputs(body: dict[str, Any], current: dict[str, Any]) -> tuple[Any, str, int]:
-    table_ids = _requested_table_ids(body, _reservation_table_ids(current))
+def _patch_inputs(body: dict[str, Any], current: dict[str, Any],
+                  restaurant: dict[str, Any]) -> tuple[list[str], str, int]:
+    table_ids = _canonical_table_ids(
+        restaurant, _requested_table_ids(body, _reservation_table_ids(current)))
     start_local, party = current["starts_at_local"], current["party_size"]
     if "starts_at_local" in body:
         start_local = body["starts_at_local"]
@@ -1446,7 +1448,7 @@ async def amend_reservation(reference: str, request: Request) -> dict[str, Any]:
         restaurant = restaurant_by_id(state, reservation["restaurant_id"])
         if _cutoff_passed(reservation, restaurant):
             error(409, "cutoff_passed", "The cancellation cutoff has passed.")
-        table_ids, start_local, party = _patch_inputs(body, reservation)
+        table_ids, start_local, party = _patch_inputs(body, reservation, restaurant)
         if (table_ids, start_local, party) == (
                 _reservation_table_ids(reservation), reservation["starts_at_local"],
                 reservation["party_size"]):
@@ -1517,7 +1519,7 @@ async def move_reservations(request: Request) -> ApiJSONResponse:
             restaurant = restaurant_by_id(state, reservation["restaurant_id"])
             if _cutoff_passed(reservation, restaurant):
                 error(409, "cutoff_passed", "The cancellation cutoff has passed.")
-            table_ids, start_local, party = _patch_inputs(patch, reservation)
+            table_ids, start_local, party = _patch_inputs(patch, reservation, restaurant)
             if (table_ids, start_local, party) == (
                     _reservation_table_ids(reservation), reservation["starts_at_local"],
                     reservation["party_size"]):
