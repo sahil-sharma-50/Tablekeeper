@@ -149,7 +149,7 @@ def _valid_password_hash(encoded: str) -> bool:
 
 def _empty_state() -> dict[str, Any]:
     return {"version": 1, "users": [], "tokens": {}, "restaurants": [],
-            "reservations": [], "receipts": []}
+            "reservations": [], "receipts": [], "series": []}
 
 
 _DB_PATH = os.environ.get("TABLEKEEPER_DB", "/tmp/tablekeeper.sqlite3")
@@ -344,11 +344,20 @@ def _restaurant(raw: Any) -> dict[str, Any]:
             invalid()
         pair_keys.add(pair_key)
         combinable.append(pair)
-    return {"id": rid, "name": name, "timezone": timezone,
-            "slot_minutes": slot, "reservation_duration_minutes": duration,
-            "cancellation_cutoff_minutes": cutoff,
-            "opening_hours": opening_hours, "tables": tables,
-            "combinable": combinable}
+    managers = raw.get("manager_user_ids", [])
+    if not isinstance(managers, list):
+        malformed()
+    managers = [identifier(value) for value in managers]
+    if len(set(managers)) != len(managers):
+        invalid()
+    result = {"id": rid, "name": name, "timezone": timezone,
+              "slot_minutes": slot, "reservation_duration_minutes": duration,
+              "cancellation_cutoff_minutes": cutoff,
+              "opening_hours": opening_hours, "tables": tables,
+              "combinable": combinable}
+    if "manager_user_ids" in raw:
+        result["manager_user_ids"] = managers
+    return result
 
 
 def _fixture(root: dict[str, Any]) -> dict[str, Any]:
@@ -377,8 +386,12 @@ def _fixture(root: dict[str, Any]) -> dict[str, Any]:
     restaurants = [_restaurant(item) for item in restaurants_raw]
     if len({item["id"] for item in restaurants}) != len(restaurants):
         invalid()
+    for restaurant in restaurants:
+        if not set(restaurant.get("manager_user_ids", [])).issubset(user_ids):
+            invalid()
+        restaurant.update({"policies": [], "restaurant_revision": 0})
     state = {"version": 1, "users": users, "tokens": {}, "restaurants": restaurants,
-             "reservations": [], "receipts": []}
+             "reservations": [], "receipts": [], "series": []}
     for item in reservations_raw:
         if not isinstance(item, dict):
             malformed()
@@ -402,6 +415,10 @@ def _fixture(root: dict[str, Any]) -> dict[str, Any]:
                        "restaurant_id": rid, "party_size": party,
                        "status": status, **fields, "created_at": utc_now()}
         _set_reservation_tables(reservation, fields["table_ids"])
+        reservation["revision"] = 1
+        reservation["history"] = []
+        _record_history(reservation, "created", _creation_changes(reservation),
+                        reservation["created_at"])
         if any(row["reservation_id"] == res_id or row["reference"] == reference
                for row in state["reservations"]):
             invalid()
@@ -476,6 +493,95 @@ def _set_reservation_tables(reservation: dict[str, Any], table_ids: list[str]) -
     reservation.update(_table_fields(table_ids))
 
 
+def _policy0(restaurant: dict[str, Any]) -> dict[str, Any]:
+    return {"policy_version": 0, "slot_minutes": restaurant["slot_minutes"],
+            "reservation_duration_minutes": restaurant["reservation_duration_minutes"],
+            "cancellation_cutoff_minutes": restaurant["cancellation_cutoff_minutes"],
+            "opening_hours": restaurant["opening_hours"],
+            "capacities": {table["id"]: table["capacity"]
+                           for table in restaurant["tables"]}}
+
+
+def _policy_terms(policy: dict[str, Any]) -> dict[str, Any]:
+    return {"policy_version": policy["policy_version"],
+            "slot_minutes": policy["slot_minutes"],
+            "reservation_duration_minutes": policy["reservation_duration_minutes"],
+            "cancellation_cutoff_minutes": policy["cancellation_cutoff_minutes"],
+            "opening_hours": [dict(item) for item in policy["opening_hours"]],
+            "capacities": dict(policy["capacities"])}
+
+
+def _policy_for_date(restaurant: dict[str, Any], date: dt.date) -> dict[str, Any]:
+    applicable = [policy for policy in restaurant.get("policies", [])
+                  if policy["effective_from"] <= date.isoformat()]
+    return max(applicable, key=lambda policy: (policy["effective_from"],
+                                                policy["policy_version"])) \
+        if applicable else _policy0(restaurant)
+
+
+def _policy_payload(body: dict[str, Any], restaurant: dict[str, Any]) -> dict[str, Any]:
+    effective = body.get("effective_from")
+    if not isinstance(effective, str):
+        invalid()
+    try:
+        _parse_date(effective)
+    except ApiError:
+        invalid()
+    values = {}
+    for name, minimum, maximum in (
+            ("slot_minutes", 1, 1440),
+            ("reservation_duration_minutes", 1, 1440),
+            ("cancellation_cutoff_minutes", 0, 10080)):
+        value = body.get(name)
+        if type(value) is not int or not minimum <= value <= maximum:
+            invalid()
+        values[name] = value
+    try:
+        hours = _hours(body.get("opening_hours"))
+    except ApiError:
+        invalid()
+    capacities = body.get("capacities")
+    table_ids = {table["id"] for table in restaurant["tables"]}
+    if (not isinstance(capacities, dict) or set(capacities) != table_ids or
+            any(type(value) is not int or not 1 <= value <= 100
+                for value in capacities.values())):
+        invalid()
+    return {"effective_from": effective, **values, "opening_hours": hours,
+            "capacities": dict(capacities)}
+
+
+def _valid_terms(terms: Any, restaurant: dict[str, Any]) -> bool:
+    if not isinstance(terms, dict) or set(terms) != {
+            "policy_version", "slot_minutes", "reservation_duration_minutes",
+            "cancellation_cutoff_minutes", "opening_hours", "capacities"}:
+        return False
+    version = terms.get("policy_version")
+    if type(version) is not int or version < 0:
+        return False
+    maximum_cutoff = 10080 if version else None
+    if (type(terms.get("slot_minutes")) is not int or
+            not 1 <= terms["slot_minutes"] <= 1440 or
+            type(terms.get("reservation_duration_minutes")) is not int or
+            not 1 <= terms["reservation_duration_minutes"] <= 1440 or
+            type(terms.get("cancellation_cutoff_minutes")) is not int or
+            terms["cancellation_cutoff_minutes"] < 0 or
+            (maximum_cutoff is not None and
+             terms["cancellation_cutoff_minutes"] > maximum_cutoff)):
+        return False
+    try:
+        if _hours(terms["opening_hours"]) != terms["opening_hours"]:
+            return False
+    except (ApiError, TypeError):
+        return False
+    capacities = terms["capacities"]
+    table_ids = {table["id"] for table in restaurant["tables"]}
+    if (not isinstance(capacities, dict) or set(capacities) != table_ids or
+            any(type(value) is not int or value < 1 or
+                (version > 0 and value > 100) for value in capacities.values())):
+        return False
+    return True
+
+
 def _resolve_local(value: dt.datetime, timezone: str) -> dt.datetime:
     zone = ZoneInfo(timezone)
     candidate = value.replace(tzinfo=zone, fold=0)
@@ -498,25 +604,27 @@ def booking_fields(state: dict[str, Any], rid: str, table_ids: Any,
     table_ids = _canonical_table_ids(restaurant, table_ids)
     local = _parse_local(starts_at_local)
     start = _resolve_local(local, restaurant["timezone"])
+    policy = _policy_for_date(restaurant, local.date())
     weekday = WEEKDAYS[local.weekday()]
-    hours = next((item for item in restaurant["opening_hours"]
+    hours = next((item for item in policy["opening_hours"]
                   if item["weekday"] == weekday), None)
     minute = local.hour * 60 + local.minute
-    duration = restaurant["reservation_duration_minutes"]
+    duration = policy["reservation_duration_minutes"]
     if hours is None:
         error(422, "outside_opening_hours", "The restaurant is closed then.")
     opening, closing = _minute(hours["opens"]), _minute(hours["closes"])
     if minute < opening or minute + duration > closing:
         error(422, "outside_opening_hours", "The reservation does not fit opening hours.")
-    if (minute - opening) % restaurant["slot_minutes"]:
+    if (minute - opening) % policy["slot_minutes"]:
         error(422, "not_on_slot_grid", "The start is not on the reservation grid.")
-    capacity = sum(table_by_id(restaurant, table_id)["capacity"] for table_id in table_ids)
+    capacity = sum(policy["capacities"][table_id] for table_id in table_ids)
     if party > capacity:
         error(422, "party_exceeds_capacity", "The party is larger than the selected tables' capacity.")
     end = (start.astimezone(UTC) + dt.timedelta(minutes=duration)).astimezone(
         ZoneInfo(restaurant["timezone"]))
     return {"table_ids": table_ids, "starts_at_local": starts_at_local,
-            "starts_at": _iso(start), "ends_at": _iso(end)}
+            "starts_at": _iso(start), "ends_at": _iso(end),
+            "accepted_terms": _policy_terms(policy)}
 
 
 def _instant(value: str) -> dt.datetime:
@@ -544,9 +652,106 @@ def free_for(state: dict[str, Any], candidate: dict[str, Any],
 
 def public_reservation(reservation: dict[str, Any]) -> dict[str, Any]:
     result = {key: value for key, value in reservation.items()
-              if key not in ("user_id", "table_id", "table_ids")}
+              if key not in ("user_id", "table_id", "table_ids", "history")}
     result.update(_table_fields(_reservation_table_ids(reservation)))
     return result
+
+
+def _creation_changes(reservation: dict[str, Any]) -> list[dict[str, Any]]:
+    table_ids = _reservation_table_ids(reservation)
+    field = "table_ids" if len(table_ids) > 1 else "table_id"
+    value: Any = table_ids if len(table_ids) > 1 else table_ids[0]
+    return ([{"field": field, "from": None, "to": value},
+             {"field": "starts_at_local", "from": None,
+              "to": reservation["starts_at_local"]},
+             {"field": "party_size", "from": None, "to": reservation["party_size"]}])
+
+
+def _changed_fields(before: dict[str, Any], after: dict[str, Any]) -> list[dict[str, Any]]:
+    before_ids, after_ids = _reservation_table_ids(before), _reservation_table_ids(after)
+    changes = []
+    if before_ids != after_ids:
+        if len(before_ids) > 1 or len(after_ids) > 1:
+            field, old, new = "table_ids", before_ids, after_ids
+        else:
+            field, old, new = "table_id", before_ids[0], after_ids[0]
+        changes.append({"field": field, "from": old, "to": new})
+    for field in ("starts_at_local", "party_size"):
+        if before[field] != after[field]:
+            changes.append({"field": field, "from": before[field], "to": after[field]})
+    return changes
+
+
+def _record_history(reservation: dict[str, Any], event: str,
+                    changes: list[dict[str, Any]], at: str | None = None) -> None:
+    reservation.setdefault("history", []).append({
+        "seq": len(reservation.get("history", [])) + 1,
+        "at": at or utc_now(), "event": event, "changes": changes,
+        "revision": reservation["revision"],
+        "accepted_terms": _policy_terms(reservation["accepted_terms"]),
+    })
+
+
+def _check_expected_revision(body: dict[str, Any], current: dict[str, Any]) -> None:
+    if "expected_revision" not in body:
+        return
+    expected = body["expected_revision"]
+    if type(expected) is not int or expected < 1:
+        invalid()
+    if expected != current["revision"]:
+        error(409, "stale_revision", "The reservation revision has changed.")
+
+
+def _upgrade_import_state(state: dict[str, Any]) -> dict[str, Any]:
+    state.setdefault("series", [])
+    for restaurant in state["restaurants"]:
+        restaurant.setdefault("combinable", [])
+        restaurant.setdefault("policies", [])
+        restaurant.setdefault("restaurant_revision", 0)
+    restaurants = {item["id"]: item for item in state["restaurants"]}
+    for reservation in state["reservations"]:
+        if "revision" not in reservation:
+            reservation["revision"] = 1
+            reservation["accepted_terms"] = _policy_terms(
+                _policy0(restaurants[reservation["restaurant_id"]]))
+            reservation["history"] = []
+            _record_history(reservation, "created", _creation_changes(reservation),
+                            reservation["created_at"])
+    return state
+
+
+def _private_owner_id(state: dict[str, Any], request: Request) -> str | None:
+    parts = request.headers.get("authorization", "").split()
+    if len(parts) != 2 or parts[0].lower() != "bearer":
+        return None
+    return state["tokens"].get(parts[1])
+
+
+def reservation_for_private_owner(state: dict[str, Any], reference: str,
+                                  request: Request) -> dict[str, Any]:
+    reservation = next((item for item in state["reservations"]
+                        if item["reference"] == reference), None)
+    if reservation is None or _private_owner_id(state, request) != reservation["user_id"]:
+        error(404, "not_found", "Reservation not found.")
+    return reservation
+
+
+def _series_for_reference(state: dict[str, Any], reference: str):
+    for series in state.get("series", []):
+        for occurrence in series["occurrences"]:
+            if occurrence["reference"] == reference:
+                return series, occurrence
+    return None
+
+
+def _public_series(state: dict[str, Any], series: dict[str, Any]) -> dict[str, Any]:
+    rows = {item["reference"]: item for item in state["reservations"]}
+    return {"series_id": series["series_id"], "revision": series["revision"],
+            "interval_weeks": series["interval_weeks"],
+            "occurrences": [{"index": item["index"], "reference": item["reference"],
+                             "exception": item["exception"],
+                             "reservation": public_reservation(rows[item["reference"]])}
+                            for item in series["occurrences"]]}
 
 
 def _new_id(state: dict[str, Any], prefix: str, field: str) -> str:
@@ -565,6 +770,13 @@ def _new_reference(state: dict[str, Any]) -> str:
             return value
 
 
+def _new_series_id(state: dict[str, Any]) -> str:
+    while True:
+        value = "ser_" + secrets.token_urlsafe(12)
+        if not any(row["series_id"] == value for row in state.get("series", [])):
+            return value
+
+
 def reservation_for_owner(state: dict[str, Any], reference: str, uid: str) -> dict[str, Any]:
     for reservation in state["reservations"]:
         if reservation["reference"] == reference:
@@ -577,7 +789,9 @@ def reservation_for_owner(state: dict[str, Any], reference: str, uid: str) -> di
 def _cutoff_passed(reservation: dict[str, Any], restaurant: dict[str, Any]) -> bool:
     delta = _instant(reservation["starts_at"]) - dt.datetime.now(UTC)
     delta_us = (delta.days * 86400 + delta.seconds) * 1_000_000 + delta.microseconds
-    return delta_us <= restaurant["cancellation_cutoff_minutes"] * 60 * 1_000_000
+    cutoff = reservation.get("accepted_terms", {}).get(
+        "cancellation_cutoff_minutes", restaurant["cancellation_cutoff_minutes"])
+    return delta_us <= cutoff * 60 * 1_000_000
 
 
 def _patch_inputs(body: dict[str, Any], current: dict[str, Any]) -> tuple[Any, str, int]:
@@ -598,6 +812,8 @@ def _validate_internal_state(state: Any) -> bool:
         return False
     if any(not isinstance(state.get(key), list)
            for key in ("users", "restaurants", "reservations", "receipts")):
+        return False
+    if "series" in state and not isinstance(state["series"], list):
         return False
     if not isinstance(state.get("tokens"), dict):
         return False
@@ -622,7 +838,33 @@ def _validate_internal_state(state: Any) -> bool:
         return False
     if len({item["id"] for item in checked}) != len(checked):
         return False
+    raw_restaurants = {item["id"]: item for item in state["restaurants"]}
     restaurants = {item["id"]: item for item in checked}
+    for restaurant in restaurants.values():
+        raw = raw_restaurants[restaurant["id"]]
+        restaurant.update({key: raw[key] for key in
+                           ("policies", "restaurant_revision") if key in raw})
+        manager_ids = restaurant.get("manager_user_ids", [])
+        if not set(manager_ids).issubset(user_ids):
+            return False
+        revision = raw.get("restaurant_revision", 0)
+        if type(revision) is not int or revision < 0:
+            return False
+        policies = raw.get("policies", [])
+        if not isinstance(policies, list):
+            return False
+        for index, policy in enumerate(policies, 1):
+            if not isinstance(policy, dict) or type(policy.get("policy_version")) is not int or \
+                    policy["policy_version"] != index:
+                return False
+            try:
+                normalized = _policy_payload(policy, restaurant)
+            except (ApiError, TypeError, ValueError):
+                return False
+            if any(policy.get(key) != value for key, value in normalized.items()):
+                return False
+            policy["opening_hours"] = normalized["opening_hours"]
+        restaurant["policies"] = policies
     refs, ids = set(), set()
     for reservation in state["reservations"]:
         if not isinstance(reservation, dict) or not all(
@@ -654,20 +896,72 @@ def _validate_internal_state(state: Any) -> bool:
         ids.add(reservation["reservation_id"])
         try:
             restaurant = restaurants[reservation["restaurant_id"]]
+            local = _parse_local(reservation["starts_at_local"])
             if _canonical_table_ids(restaurant, table_ids) != table_ids:
                 return False
-            capacity = sum(table_by_id(restaurant, table_id)["capacity"]
-                           for table_id in table_ids)
+            terms = reservation.get("accepted_terms")
+            if "revision" in reservation:
+                if (type(reservation["revision"]) is not int or reservation["revision"] < 1 or
+                        not _valid_terms(terms, restaurant) or
+                        not isinstance(reservation.get("history"), list)):
+                    return False
+                known_terms = [_policy_terms(_policy0(restaurant))] + [
+                    _policy_terms(policy) for policy in restaurant.get("policies", [])]
+                if not any(terms == known for known in known_terms):
+                    return False
+                if len(reservation["history"]) != reservation["revision"]:
+                    return False
+                for seq, entry in enumerate(reservation["history"], 1):
+                    if (not isinstance(entry, dict) or type(entry.get("seq")) is not int or
+                            entry["seq"] != seq or type(entry.get("revision")) is not int or
+                            entry["revision"] != seq or
+                            entry.get("event") not in ("created", "changed", "cancelled") or
+                            not isinstance(entry.get("changes"), list) or
+                            entry.get("accepted_terms") not in known_terms):
+                        return False
+                    fields = []
+                    for change in entry["changes"]:
+                        if (not isinstance(change, dict) or
+                                set(change) != {"field", "from", "to"} or
+                                change["field"] not in
+                                ("table_id", "table_ids", "starts_at_local", "party_size")):
+                            return False
+                        fields.append(change["field"])
+                    if len(set(fields)) != len(fields):
+                        return False
+                    if (entry["event"] == "created" and fields not in
+                            (["table_id", "starts_at_local", "party_size"],
+                             ["table_ids", "starts_at_local", "party_size"])):
+                        return False
+                    if entry["event"] == "changed" and not fields:
+                        return False
+                    if entry["event"] == "cancelled" and entry["changes"]:
+                        return False
+                    try:
+                        _instant(entry["at"])
+                    except (KeyError, TypeError, ValueError):
+                        return False
+                if (reservation["history"][0]["event"] != "created" or
+                        reservation["history"][-1]["accepted_terms"] != terms):
+                    return False
+                capacity_source = terms["capacities"]
+                expected_end = (_resolve_local(local, restaurant["timezone"]).astimezone(UTC) +
+                                dt.timedelta(minutes=terms["reservation_duration_minutes"]))
+                if _instant(reservation["ends_at"]) != expected_end:
+                    return False
+            else:
+                capacity_source = _policy0(restaurant)["capacities"]
+            capacity = sum(capacity_source[table_id] for table_id in table_ids)
             if reservation["party_size"] > capacity:
                 return False
-            local = _parse_local(reservation["starts_at_local"])
             if _instant(reservation["starts_at"]) != _resolve_local(
                     local, restaurant["timezone"]).astimezone(UTC):
                 return False
             if _instant(reservation["ends_at"]) <= _instant(reservation["starts_at"]):
                 return False
             _instant(reservation["created_at"])
-        except (ApiError, ValueError, ZoneInfoNotFoundError):
+        except (ApiError, TypeError, ValueError, KeyError, IndexError,
+                OverflowError, ZoneInfoNotFoundError):
             return False
     rows = state["reservations"]
     for index, reservation in enumerate(rows):
@@ -680,11 +974,16 @@ def _validate_internal_state(state: Any) -> bool:
             return False
     scopes = set()
     for receipt in state["receipts"]:
-        if not isinstance(receipt, dict) or (
-                receipt.get("user_id") not in user_ids or receipt.get("method") != "POST" or
-                receipt.get("path") not in ("/reservations", "/reservation-moves") or
-                not isinstance(receipt.get("key"), str) or
-                not 1 <= len(receipt["key"]) <= 255 or
+        if not isinstance(receipt, dict):
+            return False
+        path, key = receipt.get("path"), receipt.get("key")
+        if (not isinstance(receipt.get("user_id"), str) or
+                receipt["user_id"] not in user_ids or
+                not isinstance(receipt.get("method"), str) or receipt["method"] != "POST" or
+                not isinstance(path, str) or
+                (path not in ("/reservations", "/reservation-moves", "/series") and
+                 not re.fullmatch(r"/restaurants/[^/]+/policies", path)) or
+                not isinstance(key, str) or not 1 <= len(key) <= 255 or
                 not isinstance(receipt.get("body"), dict) or
                 not isinstance(receipt.get("response"), dict)):
             return False
@@ -692,6 +991,47 @@ def _validate_internal_state(state: Any) -> bool:
         if scope in scopes:
             return False
         scopes.add(scope)
+    series_ids, series_refs = set(), set()
+    reservation_by_reference = {item["reference"]: item for item in state["reservations"]}
+    for series in state.get("series", []):
+        if (not isinstance(series, dict) or not isinstance(series.get("series_id"), str) or
+                not series["series_id"] or series["series_id"] in series_ids or
+                not isinstance(series.get("user_id"), str) or
+                series["user_id"] not in user_ids or
+                not isinstance(series.get("restaurant_id"), str) or
+                series["restaurant_id"] not in restaurants or
+                type(series.get("revision")) is not int or series["revision"] < 1 or
+                type(series.get("interval_weeks")) is not int or
+                not 1 <= series["interval_weeks"] <= 4 or
+                not isinstance(series.get("occurrences"), list) or
+                not 2 <= len(series["occurrences"]) <= 12):
+            return False
+        series_ids.add(series["series_id"])
+        for index, occurrence in enumerate(series["occurrences"]):
+            if (not isinstance(occurrence, dict) or type(occurrence.get("index")) is not int or
+                    occurrence["index"] != index or
+                    not isinstance(occurrence.get("reference"), str) or
+                    type(occurrence.get("exception")) is not bool or
+                    occurrence["reference"] not in reservation_by_reference or
+                    occurrence["reference"] in series_refs):
+                return False
+            reservation = reservation_by_reference[occurrence["reference"]]
+            if (reservation["user_id"] != series["user_id"] or
+                    reservation["restaurant_id"] != series["restaurant_id"]):
+                return False
+            if index and not occurrence["exception"]:
+                anchor = reservation_by_reference[series["occurrences"][0]["reference"]]
+                try:
+                    anchor_local = _parse_local(anchor["starts_at_local"])
+                    expected_date = anchor_local.date() + dt.timedelta(
+                        weeks=index * series["interval_weeks"])
+                    occurrence_local = _parse_local(reservation["starts_at_local"])
+                except (ApiError, TypeError, ValueError):
+                    return False
+                if (occurrence_local.date() != expected_date or
+                        occurrence_local.time() != anchor_local.time()):
+                    return False
+            series_refs.add(occurrence["reference"])
     return True
 
 
@@ -750,9 +1090,16 @@ def export_state() -> dict[str, Any]:
 async def import_state(request: Request) -> Response:
     value = await body_object(request)
     if (value.get("track") != "tablekeeper" or type(value.get("format_version")) is not int or
-            value["format_version"] != 1 or not _validate_internal_state(value.get("state"))):
+            value["format_version"] != 1 or not isinstance(value.get("state"), dict)):
         invalid()
-    transaction(lambda state: state.update(value["state"]))
+    try:
+        replacement = json.loads(json.dumps(value["state"], allow_nan=False))
+        _upgrade_import_state(replacement)
+    except (TypeError, ValueError, KeyError):
+        invalid()
+    if not _validate_internal_state(replacement):
+        invalid()
+    transaction(lambda state: state.update(replacement))
     return Response(status_code=204)
 
 
@@ -808,8 +1155,132 @@ def restaurants() -> dict[str, Any]:
 
 
 @app.get("/restaurants/{restaurant_id}")
-def restaurant_detail(restaurant_id: str) -> dict[str, Any]:
-    return restaurant_by_id(read_state(), restaurant_id)
+def restaurant_detail(restaurant_id: str, request: Request) -> dict[str, Any]:
+    state = read_state()
+    restaurant = restaurant_by_id(state, restaurant_id)
+    uid = _private_owner_id(state, request)
+    detail = {key: value for key, value in restaurant.items()
+              if key not in ("manager_user_ids", "policies", "restaurant_revision")}
+    detail["can_manage_policies"] = uid is not None and uid in restaurant.get(
+        "manager_user_ids", [])
+    return detail
+
+
+@app.get("/restaurants/{restaurant_id}/policies")
+def list_policies(restaurant_id: str) -> dict[str, Any]:
+    restaurant = restaurant_by_id(read_state(), restaurant_id)
+    return {"policies": [dict(policy) for policy in restaurant.get("policies", [])]}
+
+
+@app.post("/restaurants/{restaurant_id}/policies", status_code=201)
+async def publish_policy(restaurant_id: str, request: Request) -> ApiJSONResponse:
+    body = await body_object(request)
+
+    def change(state: dict[str, Any]) -> tuple[int, dict[str, Any]]:
+        restaurant = restaurant_by_id(state, restaurant_id)
+        uid = user_id_for(state, request)
+        if uid not in restaurant.get("manager_user_ids", []):
+            error(403, "forbidden", "Only a restaurant manager can publish policies.")
+        key = idempotency_key(request)
+        path = f"/restaurants/{restaurant_id}/policies"
+        previous = replay(state, uid, path, key, body)
+        if previous is not None:
+            return 200, previous
+        normalized = _policy_payload(body, restaurant)
+        policy = {"policy_version": len(restaurant.get("policies", [])) + 1,
+                  **normalized}
+        restaurant.setdefault("policies", []).append(policy)
+        restaurant["restaurant_revision"] = restaurant.get("restaurant_revision", 0) + 1
+        record_receipt(state, uid, path, key, body, policy)
+        return 201, policy
+
+    status, response = transaction(change)
+    return ApiJSONResponse(status_code=status, content=response)
+
+
+@app.get("/reservations/{reference}/history")
+def reservation_history(reference: str, request: Request) -> dict[str, Any]:
+    reservation = reservation_for_private_owner(read_state(), reference, request)
+    return {"reference": reference,
+            "entries": [dict(entry) for entry in reservation.get("history", [])]}
+
+
+@app.get("/reservations/{reference}/decision")
+def reservation_decision(reference: str, request: Request) -> dict[str, Any]:
+    reservation = reservation_for_private_owner(read_state(), reference, request)
+    return {"reference": reference, "revision": reservation["revision"],
+            "accepted_terms": reservation["accepted_terms"]}
+
+
+@app.post("/series", status_code=201)
+async def create_series(request: Request) -> ApiJSONResponse:
+    body = await body_object(request)
+
+    def change(state: dict[str, Any]) -> tuple[int, dict[str, Any]]:
+        uid = user_id_for(state, request)
+        key = idempotency_key(request)
+        previous = replay(state, uid, "/series", key, body)
+        if previous is not None:
+            return 200, previous
+        anchor_reference = required(body, "anchor_reference")
+        if not isinstance(anchor_reference, str):
+            malformed()
+        anchor = reservation_for_owner(state, anchor_reference, uid)
+        if anchor["status"] != "confirmed":
+            error(409, "reservation_cancelled", "The anchor reservation is cancelled.")
+        if _series_for_reference(state, anchor_reference) is not None:
+            error(409, "already_in_series", "The reservation already belongs to a series.")
+        restaurant = restaurant_by_id(state, anchor["restaurant_id"])
+        if _cutoff_passed(anchor, restaurant):
+            error(409, "cutoff_passed", "The cancellation cutoff has passed.")
+        count = required(body, "count")
+        interval_weeks = required(body, "interval_weeks")
+        if type(count) is not int or not 2 <= count <= 12 or \
+                type(interval_weeks) is not int or not 1 <= interval_weeks <= 4:
+            invalid()
+        anchor_local = _parse_local(anchor["starts_at_local"])
+        occurrences = [{"index": 0, "reference": anchor_reference, "exception": False}]
+        for index in range(1, count):
+            date = anchor_local.date() + dt.timedelta(weeks=index * interval_weeks)
+            starts_at_local = f"{date.isoformat()}T{anchor_local:%H:%M}"
+            fields = booking_fields(state, anchor["restaurant_id"],
+                                    _reservation_table_ids(anchor), starts_at_local,
+                                    anchor["party_size"])
+            reservation = {"reservation_id": _new_id(state, "res_", "reservation_id"),
+                           "reference": _new_reference(state), "user_id": uid,
+                           "restaurant_id": anchor["restaurant_id"],
+                           "party_size": anchor["party_size"], "status": "confirmed",
+                           **fields, "created_at": utc_now(), "revision": 1, "history": []}
+            _set_reservation_tables(reservation, fields["table_ids"])
+            if not free_for(state, reservation):
+                error(409, "table_unavailable", "A recurring table is already reserved.")
+            _record_history(reservation, "created", _creation_changes(reservation),
+                            reservation["created_at"])
+            state["reservations"].append(reservation)
+            occurrences.append({"index": index, "reference": reservation["reference"],
+                                "exception": False})
+        series = {"series_id": _new_series_id(state), "user_id": uid,
+                  "restaurant_id": anchor["restaurant_id"], "revision": 1,
+                  "interval_weeks": interval_weeks, "occurrences": occurrences}
+        state.setdefault("series", []).append(series)
+        restaurant["restaurant_revision"] = restaurant.get("restaurant_revision", 0) + 1
+        response = _public_series(state, series)
+        record_receipt(state, uid, "/series", key, body, response)
+        return 201, response
+
+    status, response = transaction(change)
+    return ApiJSONResponse(status_code=status, content=response)
+
+
+@app.get("/series/{series_id}")
+def get_series(series_id: str, request: Request) -> dict[str, Any]:
+    state = read_state()
+    uid = _private_owner_id(state, request)
+    series = next((item for item in state.get("series", [])
+                   if item["series_id"] == series_id and item["user_id"] == uid), None)
+    if series is None:
+        error(404, "not_found", "Series not found.")
+    return _public_series(state, series)
 
 
 @app.get("/availability")
@@ -825,15 +1296,20 @@ def availability(request: Request) -> dict[str, Any]:
     party = int(party_value)
     if party < 1:
         invalid()
+    explain_value = query.get("explain")
+    if explain_value is not None and explain_value != "true":
+        invalid()
+    explain = explain_value == "true"
     state = read_state()
     restaurant = restaurant_by_id(state, rid)
+    policy = _policy_for_date(restaurant, date)
     weekday = WEEKDAYS[date.weekday()]
-    hours = next((item for item in restaurant["opening_hours"]
+    hours = next((item for item in policy["opening_hours"]
                   if item["weekday"] == weekday), None)
     slots = []
     if hours is not None:
         opening, closing = _minute(hours["opens"]), _minute(hours["closes"])
-        duration, step = restaurant["reservation_duration_minutes"], restaurant["slot_minutes"]
+        duration, step = policy["reservation_duration_minutes"], policy["slot_minutes"]
         minute = opening
         while minute + duration <= closing:
             local = dt.datetime.combine(date, dt.time(minute // 60, minute % 60))
@@ -848,22 +1324,32 @@ def availability(request: Request) -> dict[str, Any]:
                 ZoneInfo(restaurant["timezone"]))
             candidate = {"restaurant_id": rid, "table_ids": [], "starts_at": _iso(start),
                          "ends_at": _iso(end), "status": "confirmed"}
-            free_tables, available_options = [], []
+            free_tables, available_options, explanations = [], [], []
             for table in restaurant["tables"]:
                 candidate["table_ids"] = [table["id"]]
-                if table["capacity"] >= party and free_for(state, candidate):
+                capacity_holds = policy["capacities"][table["id"]] >= party
+                overlap_holds = free_for(state, candidate)
+                if capacity_holds and overlap_holds:
                     free_tables.append(table["id"])
                     available_options.append({"table_ids": [table["id"]],
-                                              "capacity": table["capacity"]})
+                                              "capacity": policy["capacities"][table["id"]]})
+                if explain:
+                    explanations.append({"table_id": table["id"],
+                                         "policy_version": policy["policy_version"],
+                                         "available": capacity_holds and overlap_holds,
+                                         "rules": [{"rule": "capacity", "holds": capacity_holds},
+                                                   {"rule": "no_overlap", "holds": overlap_holds}]})
             for pair in restaurant.get("combinable", []):
                 candidate["table_ids"] = list(pair)
-                capacity = sum(table_by_id(restaurant, table_id)["capacity"]
-                               for table_id in pair)
+                capacity = sum(policy["capacities"][table_id] for table_id in pair)
                 if capacity >= party and free_for(state, candidate):
                     available_options.append({"table_ids": list(pair), "capacity": capacity})
-            slots.append({"starts_at_local": local.strftime("%Y-%m-%dT%H:%M"),
-                          "starts_at": _iso(start), "available_table_ids": free_tables,
-                          "available_options": available_options})
+            slot = {"starts_at_local": local.strftime("%Y-%m-%dT%H:%M"),
+                    "starts_at": _iso(start), "available_table_ids": free_tables,
+                    "available_options": available_options}
+            if explain:
+                slot["explain"] = explanations
+            slots.append(slot)
             minute += step
     return {"restaurant_id": rid, "date": date.isoformat(),
             "timezone": restaurant["timezone"], "slots": slots}
@@ -894,7 +1380,13 @@ async def create_reservation(request: Request) -> ApiJSONResponse:
         _set_reservation_tables(reservation, fields["table_ids"])
         if not free_for(state, reservation):
             error(409, "table_unavailable", "That table is already reserved.")
+        reservation["revision"] = 1
+        reservation["history"] = []
+        _record_history(reservation, "created", _creation_changes(reservation),
+                        reservation["created_at"])
         state["reservations"].append(reservation)
+        restaurant = restaurant_by_id(state, rid)
+        restaurant["restaurant_revision"] = restaurant.get("restaurant_revision", 0) + 1
         response = public_reservation(reservation)
         record_receipt(state, uid, "/reservations", key, body, response)
         return 201, response
@@ -931,6 +1423,12 @@ def cancel_reservation(reference: str, request: Request) -> dict[str, Any]:
         if _cutoff_passed(reservation, restaurant):
             error(409, "cutoff_passed", "The cancellation cutoff has passed.")
         reservation["status"] = "cancelled"
+        reservation["revision"] += 1
+        _record_history(reservation, "cancelled", [])
+        restaurant["restaurant_revision"] = restaurant.get("restaurant_revision", 0) + 1
+        series_member = _series_for_reference(state, reference)
+        if series_member is not None:
+            series_member[0]["revision"] += 1
         return public_reservation(reservation)
     return transaction(change)
 
@@ -942,6 +1440,7 @@ async def amend_reservation(reference: str, request: Request) -> dict[str, Any]:
     def change(state: dict[str, Any]) -> dict[str, Any]:
         uid = user_id_for(state, request)
         reservation = reservation_for_owner(state, reference, uid)
+        _check_expected_revision(body, reservation)
         if reservation["status"] == "cancelled":
             error(409, "reservation_cancelled", "The reservation is cancelled.")
         restaurant = restaurant_by_id(state, reservation["restaurant_id"])
@@ -958,8 +1457,16 @@ async def amend_reservation(reference: str, request: Request) -> dict[str, Any]:
         _set_reservation_tables(candidate, fields["table_ids"])
         if not free_for(state, candidate, {reference}):
             error(409, "table_unavailable", "That table is already reserved.")
+        changes = _changed_fields(reservation, candidate)
         reservation.update({"party_size": party, **fields})
         _set_reservation_tables(reservation, fields["table_ids"])
+        reservation["revision"] += 1
+        _record_history(reservation, "changed", changes)
+        restaurant["restaurant_revision"] = restaurant.get("restaurant_revision", 0) + 1
+        series_member = _series_for_reference(state, reference)
+        if series_member is not None:
+            series_member[0]["revision"] += 1
+            series_member[1]["exception"] = True
         return public_reservation(reservation)
     return transaction(change)
 
@@ -977,7 +1484,7 @@ async def move_reservations(request: Request) -> ApiJSONResponse:
         raw_moves = body.get("moves")
         if not isinstance(raw_moves, list) or not 1 <= len(raw_moves) <= 8:
             invalid()
-        references, patches = [], []
+        references, patches, expected_revisions = [], [], []
         for item in raw_moves:
             if not isinstance(item, dict):
                 invalid()
@@ -987,10 +1494,18 @@ async def move_reservations(request: Request) -> ApiJSONResponse:
             references.append(reference)
             patches.append({name: value for name, value in item.items()
                             if name in ("table_id", "table_ids", "starts_at_local", "party_size")})
+            expected = item.get("expected_revision")
+            if "expected_revision" in item and (type(expected) is not int or expected < 1):
+                invalid()
+            expected_revisions.append(expected if "expected_revision" in item else None)
         if len(set(references)) != len(references):
             invalid()
 
         reservations, candidates, common_restaurant = [], [], None
+        for reference, expected in zip(references, expected_revisions):
+            reservation = reservation_for_owner(state, reference, uid)
+            if expected is not None and expected != reservation["revision"]:
+                error(409, "stale_revision", "The reservation revision has changed.")
         for reference, patch in zip(references, patches):
             reservation = reservation_for_owner(state, reference, uid)
             if common_restaurant is None:
@@ -1024,11 +1539,28 @@ async def move_reservations(request: Request) -> ApiJSONResponse:
                         set(_reservation_table_ids(candidate)).intersection(
                             _reservation_table_ids(other)) and overlaps(candidate, other)):
                     error(409, "table_unavailable", "The batch contains overlapping reservations.")
+        changed = []
+        affected_series = {}
         for reservation, candidate in zip(reservations, candidates):
+            fields_changed = _changed_fields(reservation, candidate)
+            if not fields_changed:
+                continue
             reservation.update({name: candidate[name] for name in (
-                "party_size", "starts_at_local", "starts_at", "ends_at")})
+                "party_size", "starts_at_local", "starts_at", "ends_at", "accepted_terms")})
             _set_reservation_tables(reservation, _reservation_table_ids(candidate))
-        response = {"reservations": [public_reservation(item) for item in candidates]}
+            reservation["revision"] += 1
+            _record_history(reservation, "changed", fields_changed)
+            changed.append(reservation)
+            series_member = _series_for_reference(state, reservation["reference"])
+            if series_member is not None:
+                series_member[1]["exception"] = True
+                affected_series[series_member[0]["series_id"]] = series_member[0]
+        if changed:
+            restaurant = restaurant_by_id(state, common_restaurant)
+            restaurant["restaurant_revision"] = restaurant.get("restaurant_revision", 0) + 1
+            for series in affected_series.values():
+                series["revision"] += 1
+        response = {"reservations": [public_reservation(item) for item in reservations]}
         record_receipt(state, uid, "/reservation-moves", key, body, response)
         return 201, response
 
