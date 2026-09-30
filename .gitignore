@@ -1,0 +1,13 @@
+.env
+.env.*
+node_modules/
+__pycache__/
+.pytest_cache/
+.venv/
+dist/
+*.pyc
+*.sqlite*
+evidence/private/
+evidence/fresh-clone/
+evidence/**/raw-export*.json
+evidence/**/raw-fixture*.json
