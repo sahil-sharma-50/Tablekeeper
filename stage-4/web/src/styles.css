@@ -50,8 +50,8 @@
 }
 
 * { box-sizing: border-box; }
-html { min-width: 320px; scroll-behavior: smooth; }
-body { margin: 0; min-width: 320px; min-height: 100vh; background: var(--page); color: var(--ink); }
+html { min-width: 0; scroll-behavior: smooth; }
+body { margin: 0; min-width: 0; min-height: 100vh; background: var(--page); color: var(--ink); }
 button, input, select { font: inherit; }
 button, a, input, select { -webkit-tap-highlight-color: transparent; }
 a { color: inherit; }
@@ -346,6 +346,35 @@ input:hover, select:hover { border-color: var(--olive); }
   .series-occurrences > li { grid-template-columns: 1fr; }
   .series-occurrences .button { justify-self: start; }
   .history-event { align-items: flex-start; flex-direction: column; gap: 3px; }
+}
+@media (max-width: 240px) {
+  .site-header { height: auto; min-height: 65px; flex-direction: column; align-items: stretch; gap: 6px; padding: 8px; }
+  .brand { align-self: flex-start; }
+  .site-header nav { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px; width: 100%; min-width: 0; }
+  .site-header nav > a { min-width: 0; overflow-wrap: anywhere; }
+  .account-nav { min-width: 0; gap: 6px; }
+  .theme-toggle { grid-column: 2; justify-self: end; }
+  .page-shell, .site-footer { width: calc(100% - 16px); min-width: 0; }
+  .page-shell > * { min-width: 0; max-width: 100%; }
+  .home-page, .lookup-page { min-width: 0; }
+  .lookup-intro h1, .series-meta { overflow-wrap: anywhere; }
+  .hours-days { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .policy-numbers, .policy-capacities, .policy-day { grid-template-columns: minmax(0, 1fr); }
+  .policy-hours, .policy-capacities, .policy-form > * { min-width: 0; max-width: 100%; }
+  .home-page { padding-top: 12px; }
+  .hero { grid-template-columns: minmax(0, 1fr); min-height: 0; gap: 8px; padding: 12px; }
+  .hero-art { height: 80px; min-width: 0; }
+  .hero-art > img:first-child { width: min(100%, 160px); height: 80px; }
+  .search-card, .results-section, .reservation-panel, .recovery-panel, .lookup-card, .series-panel { min-width: 0; padding: 10px; }
+  .search-form, .recovery-form, .series-amend-fields { grid-template-columns: minmax(0, 1fr); min-width: 0; }
+  .recovery-form, .series-amend-form { padding: 10px; }
+  .recovery-form > *, .series-amend-form > * { min-width: 0; max-width: 100%; }
+  .hours-strip { grid-template-columns: minmax(0, 1fr); gap: 6px; }
+  .reservation-panel { position: static; min-height: 0; }
+  .replan-preview, .replan-assignments, .series-occurrences { min-width: 0; }
+  .replan-assignments > li, .series-occurrences > li { min-width: 0; grid-template-columns: minmax(0, 1fr); }
+  .lookup-result-heading { flex-wrap: wrap; }
+  .lookup-result dl > div { grid-template-columns: minmax(0, 1fr); gap: 2px; }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; }
