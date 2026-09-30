@@ -1,0 +1,43 @@
+{
+  "signedInBefore": "QA 97",
+  "uncertainText": "We couldn’t confirm the result. Your original request is saved; retry to check the same reservation.",
+  "beforeImport": {
+    "error": false,
+    "confirmation": false,
+    "form": true
+  },
+  "sourceExportStatus": 200,
+  "targetImportStatus": 204,
+  "targetImportEmpty": true,
+  "committedStatus": 201,
+  "committedReference": "Q2ITJ2CH",
+  "retryStatus": 200,
+  "retryBody": {
+    "restaurant_id": "r_anker",
+    "table_id": "t_2",
+    "starts_at_local": "2026-10-14T19:00",
+    "party_size": 4
+  },
+  "retryKey": "aff404d4-67a3-4ece-bba0-d6c023626e40",
+  "originalBody": {
+    "restaurant_id": "r_anker",
+    "table_id": "t_2",
+    "starts_at_local": "2026-10-14T19:00",
+    "party_size": 4
+  },
+  "originalKey": "aff404d4-67a3-4ece-bba0-d6c023626e40",
+  "sameBodyAndKey": true,
+  "referenceMatches": true,
+  "afterRetry": {
+    "user": "QA 97",
+    "uncertain": false,
+    "error": false,
+    "reference": "Q2ITJ2CH"
+  },
+  "lookup": {
+    "status": "confirmed",
+    "detail": true,
+    "error": null,
+    "cancel": true
+  }
+}

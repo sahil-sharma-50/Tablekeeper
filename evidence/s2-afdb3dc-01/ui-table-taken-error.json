@@ -1,0 +1,12 @@
+{
+  "bookingError": "That table is already reserved.",
+  "errorRole": "alert",
+  "formPresent": true,
+  "formText": "QA RestaurantWednesday 14 October · 19:00DParty sizeThat table is already reserved.Reserve this table↗Nothing is held until the reservation is confirmed.",
+  "partyInput": "4",
+  "selectedSummary": "QA RestaurantWednesday 14 October · 19:00D",
+  "slotAvailable": "false",
+  "slotDisabled": true,
+  "uncertain": false,
+  "confirmationText": false
+}

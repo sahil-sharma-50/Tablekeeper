@@ -1,0 +1,32 @@
+{
+  "viewport": [
+    1280,
+    720
+  ],
+  "scrollHeight": 720,
+  "scrollY": 0,
+  "overflow": 0,
+  "images": [
+    {
+      "src": "http://127.0.0.1:18082/assets/signin-bistro.png",
+      "box": [
+        618.2000122070312,
+        465
+      ],
+      "intrinsic": [
+        1254,
+        1254
+      ],
+      "ratio": [
+        1,
+        1.329462391843078
+      ],
+      "objectFit": "cover"
+    }
+  ],
+  "accountMain": {
+    "top": 76,
+    "bottom": 646,
+    "height": 570
+  }
+}

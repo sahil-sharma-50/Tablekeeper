@@ -1,0 +1,33 @@
+{
+  "viewport": [
+    1280,
+    720
+  ],
+  "scrollHeight": 780,
+  "scrollY": 0,
+  "overflow": 0,
+  "images": [
+    {
+      "src": "http://127.0.0.1:18082/assets/signup-table.png",
+      "natural": [
+        1254,
+        1254
+      ],
+      "box": [
+        618.2000122070312,
+        465
+      ],
+      "objectFit": "cover"
+    }
+  ],
+  "headings": [
+    {
+      "text": "Gather around.",
+      "font": "Georgia, \"Times New Roman\", serif"
+    },
+    {
+      "text": "Create your account",
+      "font": "Georgia, \"Times New Roman\", serif"
+    }
+  ]
+}

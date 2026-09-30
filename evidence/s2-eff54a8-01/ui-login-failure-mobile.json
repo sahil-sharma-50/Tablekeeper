@@ -1,0 +1,23 @@
+{
+  "viewport": [
+    375,
+    812
+  ],
+  "scrollY": 0,
+  "scrollHeight": 928,
+  "alert": "Email or password is incorrect.",
+  "alertRole": "alert",
+  "alertRect": [
+    702.5375366210938,
+    742.7125358581543
+  ],
+  "fullyVisible": true,
+  "submitDescribedBy": null,
+  "focus": {
+    "tag": "BODY"
+  },
+  "formValuesRetained": [
+    "[redacted-test-email]",
+    true
+  ]
+}

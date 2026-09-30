@@ -1,0 +1,44 @@
+{
+  "attempts": [
+    {
+      "key": "ed0e88d7-0851-47a7-882b-f7f337915523",
+      "body": "{\"restaurant_id\":\"r_combo\",\"table_ids\":[\"t_a\",\"t_b\"],\"starts_at_local\":\"2026-10-15T21:00\",\"party_size\":4}"
+    },
+    {
+      "key": "ed0e88d7-0851-47a7-882b-f7f337915523",
+      "body": "{\"restaurant_id\":\"r_combo\",\"table_ids\":[\"t_a\",\"t_b\"],\"starts_at_local\":\"2026-10-15T21:00\",\"party_size\":4}"
+    }
+  ],
+  "committedStatus": 201,
+  "committedReference": "AZDVKI5G",
+  "replayStatus": 200,
+  "replayReference": "AZDVKI5G",
+  "requestBody": {
+    "restaurant_id": "r_combo",
+    "table_ids": [
+      "t_a",
+      "t_b"
+    ],
+    "starts_at_local": "2026-10-15T21:00",
+    "party_size": 4
+  },
+  "responseTables": [
+    "t_a",
+    "t_b"
+  ],
+  "uncertainText": "We couldn’t confirm the result. Your original request is saved; retry to check the same reservation.",
+  "before": {
+    "error": false,
+    "confirmation": false,
+    "formText": "QA Restaurant\nThursday 15 October · 21:00\nA + B\n\nParty size\n\nWe couldn’t confirm the result. Your original request is saved; retry to check the same reservation.\n\nRetry reservation\n↗\n\nNothing is held until the reservation is confirmed.",
+    "selected": "QA Restaurant\nThursday 15 October · 21:00\nA + B"
+  },
+  "after": {
+    "uncertain": false,
+    "error": false,
+    "reference": "AZDVKI5G",
+    "confirmation": true
+  },
+  "sameKeyAndBody": true,
+  "referenceMatchesCommitted": true
+}

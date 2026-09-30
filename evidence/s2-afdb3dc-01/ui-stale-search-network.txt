@@ -1,0 +1,6 @@
+11. [GET] http://localhost:18084/availability?restaurant_id=r_ui&date=2026-10-05&party_size=2 => [200] OK
+12. [GET] http://localhost:18084/availability?restaurant_id=r_ui&date=2026-10-06&party_size=2 => [200] OK
+14. [GET] http://localhost:18084/availability?restaurant_id=r_ui&date=2026-10-05&party_size=2 => [200] OK
+15. [GET] http://localhost:18084/availability?restaurant_id=r_ui&date=2026-10-06&party_size=2 => [200] OK
+
+Note: 10 static requests not shown, run with "static" option to see them.

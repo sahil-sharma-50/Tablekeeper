@@ -1,0 +1,30 @@
+{
+  "fonts": {
+    "body": "\"Source Sans 3\", sans-serif",
+    "headings": [
+      {
+        "text": "Good to see you.",
+        "font": "Georgia, \"Times New Roman\", serif"
+      },
+      {
+        "text": "Welcome back",
+        "font": "Georgia, \"Times New Roman\", serif"
+      }
+    ]
+  },
+  "requiredFontLoaded": true,
+  "image": [
+    {
+      "src": "http://127.0.0.1:18082/assets/signin-bistro.png",
+      "intrinsic": [
+        1254,
+        1254
+      ],
+      "box": [
+        618.2000122070312,
+        465
+      ],
+      "objectFit": "cover"
+    }
+  ]
+}

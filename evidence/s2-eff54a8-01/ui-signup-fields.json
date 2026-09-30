@@ -1,0 +1,23 @@
+[
+  {
+    "type": "text",
+    "name": "display_name",
+    "testid": "signup-display-name",
+    "aria": null,
+    "label": "Your name"
+  },
+  {
+    "type": "email",
+    "name": "email",
+    "testid": "signup-email",
+    "aria": null,
+    "label": "Email address"
+  },
+  {
+    "type": "password",
+    "name": "password",
+    "testid": "signup-password",
+    "aria": null,
+    "label": "Password"
+  }
+]

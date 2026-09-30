@@ -1,0 +1,11 @@
+{
+  "theme": "dark",
+  "bodyBg": "rgb(28, 33, 26)",
+  "localKeys": [
+    "tablekeeper.theme"
+  ],
+  "sessionKeys": [
+    "tablekeeper.bookingDraft"
+  ],
+  "font": "Georgia, \"Times New Roman\", serif"
+}

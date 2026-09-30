@@ -1,0 +1,48 @@
+{
+  "viewport": [
+    1038,
+    802
+  ],
+  "scrollHeight": 802,
+  "scrollWidth": 1038,
+  "scrollY": 0,
+  "images": [
+    {
+      "alt": "A warmly lit restaurant ready for guests",
+      "src": "http://127.0.0.1:18082/assets/signin-bistro.png",
+      "natural": [
+        1254,
+        1254
+      ],
+      "rendered": [
+        506.0500183105469,
+        465
+      ],
+      "ratio": [
+        1,
+        1.0882796092699933
+      ],
+      "objectFit": "cover",
+      "objectPosition": "50% 50%"
+    }
+  ],
+  "font": "Georgia, \"Times New Roman\", serif",
+  "layout": [
+    [
+      "SECTION",
+      "auth-art",
+      28,
+      169.3000030517578,
+      506.0500183105469,
+      465
+    ],
+    [
+      "SECTION",
+      "auth-card",
+      596.3500366210938,
+      156.16250610351562,
+      414.0500183105469,
+      491.26251220703125
+    ]
+  ]
+}

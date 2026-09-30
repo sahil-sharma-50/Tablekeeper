@@ -1,0 +1,13 @@
+{
+  "url": "http://127.0.0.1:18082/signup",
+  "alert": "That email is already registered.",
+  "alertRole": "alert",
+  "alertVisible": true,
+  "submitExists": true,
+  "submitDescribedBy": null,
+  "focus": {
+    "tag": "BODY"
+  },
+  "emailRetained": "[redacted-test-email]",
+  "passwordRetained": true
+}

@@ -1,0 +1,18 @@
+{
+  "date": "2026-10-06",
+  "slots": [
+    {
+      "id": "slot-solo-08:00",
+      "available": "false",
+      "disabled": true,
+      "label": "Solo, 08:00, unavailable"
+    }
+  ],
+  "grid": true,
+  "noSlots": false,
+  "heading": [
+    "Find your table",
+    "Tuesday 6 October",
+    "Reservation review"
+  ]
+}

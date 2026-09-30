@@ -1,0 +1,10 @@
+{
+  "signedIn": false,
+  "detail": false,
+  "cancel": false,
+  "error": "Sign in to look up your reservation.",
+  "alerts": [
+    "Sign in to access your reservations. Sign in",
+    "Sign in to look up your reservation."
+  ]
+}

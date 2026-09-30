@@ -1,0 +1,47 @@
+{
+  "attempts": [
+    {
+      "key": "5b23920b-ba80-4c6f-a30e-aac80243ebf2",
+      "body": "{\"restaurant_id\":\"r_combo\",\"table_id\":\"t_d\",\"starts_at_local\":\"2026-10-15T21:00\",\"party_size\":4}"
+    },
+    {
+      "key": "5b23920b-ba80-4c6f-a30e-aac80243ebf2",
+      "body": "{\"restaurant_id\":\"r_combo\",\"table_id\":\"t_d\",\"starts_at_local\":\"2026-10-15T21:00\",\"party_size\":4}"
+    },
+    {
+      "key": "5b23920b-ba80-4c6f-a30e-aac80243ebf2",
+      "body": "{\"restaurant_id\":\"r_combo\",\"table_id\":\"t_d\",\"starts_at_local\":\"2026-10-15T21:00\",\"party_size\":4}"
+    },
+    {
+      "key": "376630b1-bbf9-439a-bbdd-513b0a665a06",
+      "body": "{\"restaurant_id\":\"r_combo\",\"table_id\":\"t_d\",\"starts_at_local\":\"2026-10-15T21:00\",\"party_size\":3}"
+    }
+  ],
+  "committedStatus": 201,
+  "committedReference": "ZF96WF2T",
+  "replayStatuses": [
+    200,
+    200
+  ],
+  "originalReference": "ZF96WF2T",
+  "duplicateStatus": 200,
+  "duplicateReference": "ZF96WF2T",
+  "changedStatus": 409,
+  "changedError": "table_unavailable",
+  "uncertainty": "We couldn’t confirm the result. Your original request is saved; retry to check the same reservation.",
+  "before": {
+    "error": 0,
+    "confirmation": 0,
+    "form": 1,
+    "summary": "QA Restaurant\nThursday 15 October · 21:00\nD"
+  },
+  "state": {
+    "uncertain": false,
+    "error": "That table is already reserved.",
+    "confirmation": null,
+    "form": true
+  },
+  "sameKeyAndBodyForReplay": true,
+  "newIdentityForChangedField": true,
+  "referenceMatchesCommitted": true
+}

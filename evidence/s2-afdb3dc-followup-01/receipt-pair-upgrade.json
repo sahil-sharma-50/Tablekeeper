@@ -1,0 +1,26 @@
+{
+  "source_stage1_create_status": 201,
+  "source_stage1_move_statuses": [
+    201,
+    201
+  ],
+  "source_cancel_status": 200,
+  "source_replays_after_cancel_equal": true,
+  "stage2_pair_upgrade_import_status": 204,
+  "stage2_current_read_status": "cancelled",
+  "stage2_current_read_table_ids": [
+    "t_2"
+  ],
+  "stage2_resource_change_status": 201,
+  "stage2_replay_statuses": [
+    200,
+    200,
+    200
+  ],
+  "stage2_create_receipt_json_equal": true,
+  "stage2_move_receipt_json_equal": [
+    true,
+    true
+  ],
+  "stage2_replays_preserve_stage1_response_shape": true
+}

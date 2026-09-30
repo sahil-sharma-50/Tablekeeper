@@ -1,0 +1,9 @@
+{
+  "url": "http://localhost:18084/lookup",
+  "lookupValue": "Q2ITJ2CH",
+  "detail": true,
+  "status": "confirmed",
+  "error": null,
+  "alerts": [],
+  "user": "QA 97"
+}

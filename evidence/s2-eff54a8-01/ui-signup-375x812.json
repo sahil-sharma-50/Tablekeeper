@@ -1,0 +1,33 @@
+{
+  "viewport": [
+    375,
+    812
+  ],
+  "scrollHeight": 930,
+  "scrollWidth": 360,
+  "clientWidth": 360,
+  "scrollY": 0,
+  "main": [
+    65,
+    852.6625366210938
+  ],
+  "panel": [
+    291,
+    817.6625366210938,
+    328
+  ],
+  "images": [
+    {
+      "src": "http://127.0.0.1:18082/assets/signup-table.png",
+      "box": [
+        328,
+        195
+      ],
+      "natural": [
+        1254,
+        1254
+      ],
+      "objectFit": "cover"
+    }
+  ]
+}

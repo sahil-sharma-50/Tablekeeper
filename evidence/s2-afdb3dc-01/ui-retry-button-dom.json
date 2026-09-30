@@ -1,0 +1,10 @@
+[
+  {
+    "outerHTML": "<button class=\"button button-primary review-submit\" data-testid=\"booking-submit\" type=\"submit\">Retry reservation<span aria-hidden=\"true\">↗</span></button>",
+    "disabled": false,
+    "rect": [
+      476.8000183105469,
+      520.8000183105469
+    ]
+  }
+]

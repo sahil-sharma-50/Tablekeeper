@@ -1,0 +1,17 @@
+{
+  "viewport": [
+    375,
+    812
+  ],
+  "documentWidth": 360,
+  "clientWidth": 360,
+  "horizontalOverflow": false,
+  "scrollY": 278.3999938964844,
+  "scrollHeight": 1761,
+  "gridCells": 56,
+  "bookingFormVisible": true,
+  "formRect": [
+    1064.2750244140625,
+    1348.4000244140625
+  ]
+}

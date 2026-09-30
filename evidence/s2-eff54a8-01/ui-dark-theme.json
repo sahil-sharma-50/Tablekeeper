@@ -1,0 +1,8 @@
+{
+  "theme": "dark",
+  "bodyBg": "rgb(28, 33, 26)",
+  "headingFont": "Georgia, \"Times New Roman\", serif",
+  "toggleLabel": "Switch to light theme",
+  "storedTheme": null,
+  "error": null
+}
