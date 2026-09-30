@@ -1,0 +1,12 @@
+PASS 50 overlapping writes
+PASS 50 identical-key retries
+PASS 50 identical move-key retries
+PASS strict types and idempotency precedence
+PASS key length boundaries and parsed JSON equality
+PASS single-reservation PATCH semantics and cutoff
+PASS atomic swap, rollback, failed-key reuse and receipt replay
+PASS move boundaries, input order, ownership and precedence
+PASS Berlin/New York DST and absolute durations
+PASS populated import, retained token and original receipts
+TIMING requests=373 max_request_ms=51.2 controls=39 max_control_ms=962.7
+PASS all independent Stage 1 checks

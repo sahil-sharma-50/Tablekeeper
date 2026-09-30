@@ -1,0 +1,7 @@
+HTTP/1.1 404 Not Found
+date: Wed, 30 Sep 2026 11:31:04 GMT
+server: uvicorn
+content-length: 67
+content-type: application/json
+
+{"error":{"code":"not_found","message":"The route was not found."}}

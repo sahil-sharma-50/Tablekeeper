@@ -1,0 +1,15 @@
+STARTUP first_healthy_ms=1128.6 limit_ms=60000
+LIMITS NanoCPUs=2000000000 memory_bytes=2147483648 network=none PORT=8080
+OFFLINE_TZ Europe/Berlin America/New_York
+PASS 50 overlapping writes
+PASS 50 identical-key retries
+PASS 50 identical move-key retries
+PASS strict types and idempotency precedence
+PASS key length boundaries and parsed JSON equality
+PASS single-reservation PATCH semantics and cutoff
+PASS atomic swap, rollback, failed-key reuse and receipt replay
+PASS move boundaries, input order, ownership and precedence
+PASS Berlin/New York DST and absolute durations
+PASS populated import, retained token and original receipts
+TIMING requests=373 max_request_ms=29.1 controls=39 max_control_ms=1003.6
+PASS all independent Stage 1 checks

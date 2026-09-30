@@ -1,0 +1,7 @@
+HTTP/1.1 200 OK
+date: Wed, 30 Sep 2026 11:30:32 GMT
+server: uvicorn
+content-length: 86
+content-type: application/json
+
+{"restaurants":[{"id":"r_cleared","name":"QA Restaurant","timezone":"Europe/Berlin"}]}
