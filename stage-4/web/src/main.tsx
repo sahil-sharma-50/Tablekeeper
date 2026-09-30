@@ -55,6 +55,9 @@ type ReservationHistory = { reference: string; entries: HistoryEntry[] };
 type ReservationDecision = { reference: string; revision: number; accepted_terms: AcceptedTerms };
 type SeriesOccurrence = { index: number; reference: string; exception: boolean; reservation: Reservation };
 type ReservationSeries = { series_id: string; revision: number; interval_weeks: number; occurrences: SeriesOccurrence[] };
+type ReplanAssignment = { reference: string; table_ids: string[]; changed: boolean; before_table_ids?: string[] };
+type ReplanPreview = { plan_id: string; restaurant_revision: number; closure: { table_id: string; from: string; to: string }; assignments: ReplanAssignment[]; moved_count: number; unused_seats: number };
+type ReplanApplyResult = { plan_id: string; restaurant_revision: number; reservations: Reservation[] };
 type Selected = { tableIds: string[]; startsAtLocal: string };
 type Draft = { restaurantId: string; date: string; party: number; bookingParty?: number; selected: Selected | null };
 type Attempt = {
@@ -73,6 +76,9 @@ const DRAFT_KEY = "tablekeeper.bookingDraft";
 const ATTEMPT_KEY = "tablekeeper.bookingAttempt";
 const POLICY_ATTEMPT_KEY = "tablekeeper.policyAttempt";
 const SERIES_ATTEMPT_KEY = "tablekeeper.seriesAttempt";
+const SERIES_AMEND_ATTEMPT_KEY = "tablekeeper.seriesAmendAttempt";
+const REPLAN_PREVIEW_ATTEMPT_KEY = "tablekeeper.replanPreviewAttempt";
+const REPLAN_APPLY_ATTEMPT_KEY = "tablekeeper.replanApplyAttempt";
 const SERIES_ID_KEY = "tablekeeper.lastSeriesId";
 const WEEKDAYS = [
   { key: "mon", label: "Monday" }, { key: "tue", label: "Tuesday" },
@@ -143,6 +149,44 @@ function tableIds(reservation: Reservation) { return reservation.table_ids || (r
 function tableLabel(ids: string[], restaurant?: Restaurant | null) {
   return ids.map((id) => restaurant?.tables.find((table) => table.id === id)?.label || id).join(" + ");
 }
+function localDateTimeWithOffset(value: string, timeZone: string) {
+  const match = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/.exec(value);
+  if (!match) throw new Error("Choose both closure date and time.");
+  const [, yearText, monthText, dayText, hourText, minuteText] = match;
+  const fields = { year: Number(yearText), month: Number(monthText), day: Number(dayText), hour: Number(hourText), minute: Number(minuteText) };
+  const targetDate = new Date(0);
+  targetDate.setUTCFullYear(fields.year, fields.month - 1, fields.day);
+  targetDate.setUTCHours(fields.hour, fields.minute, 0, 0);
+  const target = targetDate.getTime();
+  const formatter = new Intl.DateTimeFormat("en-GB", {
+    timeZone, timeZoneName: "longOffset", year: "numeric", month: "2-digit", day: "2-digit",
+    hour: "2-digit", minute: "2-digit", hourCycle: "h23",
+  });
+  const partsAt = (instant: number) => Object.fromEntries(formatter.formatToParts(new Date(instant)).map((part) => [part.type, part.value]));
+  const offsetAt = (instant: number) => {
+    const zone = partsAt(instant).timeZoneName;
+    if (zone === "GMT") return 0;
+    const offset = /^GMT([+-])(\d{2}):(\d{2})$/.exec(zone || "");
+    if (!offset) throw new Error(`The restaurant time zone ${timeZone} could not be resolved.`);
+    const minutes = Number(offset[2]) * 60 + Number(offset[3]);
+    return offset[1] === "+" ? minutes : -minutes;
+  };
+  const offsets = new Set<number>();
+  for (let hours = -36; hours <= 36; hours += 3) offsets.add(offsetAt(target + hours * 60 * 60_000));
+  const matches = [...offsets].map((offset) => {
+    const instant = target - offset * 60_000;
+    return { instant, local: partsAt(instant) };
+  }).filter(({ local }) => Number(local.year) === fields.year && Number(local.month) === fields.month && Number(local.day) === fields.day && Number(local.hour) === fields.hour && Number(local.minute) === fields.minute)
+    .sort((left, right) => left.instant - right.instant);
+  if (!matches.length) throw new Error(`That local time does not exist in ${timeZone}. Choose another time.`);
+  const { local } = matches[0];
+  const zone = local.timeZoneName as string;
+  const suffix = zone === "GMT" ? "+00:00" : zone.slice(3);
+  return `${value}:00${suffix}`;
+}
+function formatRestaurantInstant(value: string, timeZone: string) {
+  return new Intl.DateTimeFormat(undefined, { timeZone, dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
+}
 function shortDate(value: string) {
   const date = new Date(`${value}T12:00:00`);
   return date.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" });
@@ -162,6 +206,9 @@ function writeMayBeUncertain(error: unknown) {
 }
 type WriteAttempt = { key: string; body: Record<string, unknown>; status: "sending" | "uncertain" | "rejected"; message?: string };
 type PolicyAttempt = WriteAttempt & { restaurantId: string };
+type SeriesAmendAttempt = WriteAttempt & { seriesId: string; reference: string };
+type ReplanPreviewAttempt = WriteAttempt & { restaurantId: string };
+type ReplanApplyAttempt = WriteAttempt & { restaurantId: string; plan: ReplanPreview };
 
 function TermsSummary({ terms, restaurant }: { terms: AcceptedTerms; restaurant?: Restaurant | null }) {
   const capacities = restaurant?.tables.map((table) => `${table.label}: ${terms.capacities[table.id] ?? "—"}`).join(" · ")
@@ -222,6 +269,7 @@ function App() {
       <nav aria-label="Main navigation">
         <a href="/">Find a table</a>
         <a href="/lookup">Your booking</a>
+        <a className="service-recovery-nav" href="/#service-recovery">Service recovery</a>
         {user ? <span className="account-nav"><span data-testid="current-user">{user}</span><button data-testid="logout-button" className="text-button" onClick={logout}>Sign out</button></span> : <a href="/login">Sign in</a>}
         <button className="theme-toggle" data-testid="theme-toggle" aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} theme`} onClick={() => setTheme(theme === "dark" ? "light" : "dark")}><span aria-hidden="true">{theme === "dark" ? "☼" : "☾"}</span><span className="theme-label">{theme === "dark" ? "Light" : "Dark"}</span></button>
       </nav>
@@ -479,7 +527,188 @@ function HomePage({ signedIn }: { signedIn: boolean }) {
       </> : <div className="review-empty"><span className="review-icon"><img src="/assets/tools-kitchen-2.svg" alt="" /></span><p>Select an available time to review your reservation here.</p><small>Your date, party size and chosen table stay together.</small></div>}
     </section>
     {restaurant && <PolicyEditor restaurant={restaurant} policies={policies} loading={policyLoading} loadError={policyLoadError} signedIn={signedIn} onPublished={(restaurantId, policy) => { if (restaurantId === restaurant.id) setPolicies((previous) => [...previous.filter((item) => item.policy_version !== policy.policy_version), policy].sort((a, b) => a.policy_version - b.policy_version)); }} />}
+    <ServiceRecovery restaurant={restaurant} signedIn={signedIn} onApplied={() => { void refreshAvailability(); }} />
   </main>;
+}
+
+function ServiceRecovery({ restaurant, signedIn, onApplied }: { restaurant: Restaurant | null; signedIn: boolean; onApplied: () => void }) {
+  return <section className="recovery-panel" id="service-recovery" data-testid="service-recovery" aria-labelledby="recovery-title">
+    <div className="section-heading"><div><p className="eyebrow">Manager tools</p><h2 id="recovery-title">Service recovery</h2></div></div>
+    {!signedIn && <p className="inline-status" data-testid="recovery-auth-required">Sign in with an authorized restaurant manager account to review a seating change.</p>}
+    {signedIn && !restaurant && <p className="inline-status" role="status">Loading manager access for this restaurant…</p>}
+    {signedIn && restaurant && !restaurant.can_manage_policies && <p className="inline-status" data-testid="recovery-manager-access">This account is not authorized to review seating changes for this restaurant.</p>}
+    {signedIn && restaurant?.can_manage_policies && <ReplanForm key={restaurant.id} restaurant={restaurant} onApplied={onApplied} />}
+  </section>;
+}
+
+function ReplanForm({ restaurant, onApplied }: { restaurant: Restaurant; onApplied: () => void }) {
+  const [tableId, setTableId] = useState(restaurant.tables[0]?.id || "");
+  const [fromLocal, setFromLocal] = useState("");
+  const [toLocal, setToLocal] = useState("");
+  const [previewAttempt, setPreviewAttempt] = useState<ReplanPreviewAttempt | null>(() => readWriteAttempt(REPLAN_PREVIEW_ATTEMPT_KEY) as ReplanPreviewAttempt | null);
+  const [applyAttempt, setApplyAttempt] = useState<ReplanApplyAttempt | null>(() => readWriteAttempt(REPLAN_APPLY_ATTEMPT_KEY) as ReplanApplyAttempt | null);
+  const [plan, setPlan] = useState<{ restaurantId: string; value: ReplanPreview } | null>(() => {
+    const saved = readWriteAttempt(REPLAN_APPLY_ATTEMPT_KEY) as ReplanApplyAttempt | null;
+    return saved ? { restaurantId: saved.restaurantId, value: saved.plan } : null;
+  });
+  const [invalidPlanId, setInvalidPlanId] = useState("");
+  const [applied, setApplied] = useState<{ restaurantId: string; plan: ReplanPreview; result: ReplanApplyResult } | null>(null);
+  const [previewError, setPreviewError] = useState("");
+  const [applyError, setApplyError] = useState("");
+  const [previewSuccess, setPreviewSuccess] = useState("");
+  const previewErrorRef = useRef<HTMLParagraphElement>(null);
+  const applyErrorRef = useRef<HTMLParagraphElement>(null);
+  useEffect(() => { if (previewError) revealFeedback(previewErrorRef.current); }, [previewError]);
+  useEffect(() => { if (applyError) revealFeedback(applyErrorRef.current); }, [applyError]);
+
+  const previewForRestaurant = previewAttempt?.restaurantId === restaurant.id ? previewAttempt : null;
+  const applyForRestaurant = applyAttempt?.restaurantId === restaurant.id ? applyAttempt : null;
+  const visiblePlan = plan?.restaurantId === restaurant.id ? plan.value : applyForRestaurant?.plan || null;
+  const visibleApplied = applied?.restaurantId === restaurant.id ? applied : null;
+  const pendingElsewhere = Boolean(
+    (previewAttempt && previewAttempt.restaurantId !== restaurant.id && (previewAttempt.status === "sending" || previewAttempt.status === "uncertain")) ||
+    (applyAttempt && applyAttempt.restaurantId !== restaurant.id && (applyAttempt.status === "sending" || applyAttempt.status === "uncertain"))
+  );
+  const lockedHere = Boolean(
+    (previewForRestaurant && (previewForRestaurant.status === "sending" || previewForRestaurant.status === "uncertain")) ||
+    (applyForRestaurant && (applyForRestaurant.status === "sending" || applyForRestaurant.status === "uncertain"))
+  );
+  const locked = pendingElsewhere || lockedHere;
+  const editClosure = (setter: (value: string) => void) => (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    setter(event.target.value);
+    setPlan(null); setApplied(null); setInvalidPlanId(""); setPreviewError(""); setApplyError(""); setPreviewSuccess("");
+  };
+
+  const sendPreview = async (previous: ReplanPreviewAttempt) => {
+    if (previous.restaurantId !== restaurant.id) return;
+    const sending = { ...previous, status: "sending" as const, message: undefined };
+    setPreviewAttempt(sending);
+    sessionStorage.setItem(REPLAN_PREVIEW_ATTEMPT_KEY, JSON.stringify(sending));
+    setPreviewError(""); setApplyError(""); setPreviewSuccess("");
+    try {
+      const value = await api<ReplanPreview>(`/restaurants/${encodeURIComponent(previous.restaurantId)}/replans`, {
+        method: "POST", headers: { "Idempotency-Key": previous.key }, body: JSON.stringify(previous.body),
+      });
+      sessionStorage.removeItem(REPLAN_PREVIEW_ATTEMPT_KEY);
+      setPreviewAttempt(null);
+      setPlan({ restaurantId: previous.restaurantId, value });
+      setInvalidPlanId("");
+      setApplied(null);
+      setPreviewSuccess("Preview ready. No bookings have changed.");
+    } catch (failure) {
+      const message = failure instanceof Error ? failure.message : "The seating preview could not be confirmed.";
+      if (writeMayBeUncertain(failure)) {
+        const uncertain = { ...previous, status: "uncertain" as const, message: `The preview result is uncertain. ${message} Retry the same preview.` };
+        sessionStorage.setItem(REPLAN_PREVIEW_ATTEMPT_KEY, JSON.stringify(uncertain));
+        setPreviewAttempt(uncertain);
+      } else {
+        sessionStorage.removeItem(REPLAN_PREVIEW_ATTEMPT_KEY);
+        setPreviewAttempt(null);
+        setPreviewError(message);
+      }
+    }
+  };
+
+  const previewSeating = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (previewForRestaurant?.status === "uncertain") { await sendPreview(previewForRestaurant); return; }
+    if (pendingElsewhere || lockedHere || !restaurant.tables.some((table) => table.id === tableId)) return;
+    setPreviewError(""); setApplyError(""); setPreviewSuccess("");
+    try {
+      const body = { table_id: tableId, from: localDateTimeWithOffset(fromLocal, restaurant.timezone), to: localDateTimeWithOffset(toLocal, restaurant.timezone) };
+      if (Date.parse(body.from) >= Date.parse(body.to)) throw new Error("The closure end must be later than its start.");
+      setPlan(null); setApplied(null); setInvalidPlanId("");
+      await sendPreview({ restaurantId: restaurant.id, body, key: crypto.randomUUID(), status: "sending" });
+    } catch (failure) {
+      setPreviewError(failure instanceof Error ? failure.message : "Enter a valid closure interval.");
+    }
+  };
+
+  const sendApply = async (previous: ReplanApplyAttempt) => {
+    if (previous.restaurantId !== restaurant.id) return;
+    const sending = { ...previous, status: "sending" as const, message: undefined };
+    setApplyAttempt(sending);
+    sessionStorage.setItem(REPLAN_APPLY_ATTEMPT_KEY, JSON.stringify(sending));
+    setApplyError(""); setPreviewError(""); setPreviewSuccess("");
+    try {
+      const result = await api<ReplanApplyResult>(`/restaurants/${encodeURIComponent(previous.restaurantId)}/replans/${encodeURIComponent(previous.plan.plan_id)}/apply`, {
+        method: "POST", headers: { "Idempotency-Key": previous.key }, body: JSON.stringify(previous.body),
+      });
+      sessionStorage.removeItem(REPLAN_APPLY_ATTEMPT_KEY);
+      setApplyAttempt(null);
+      setApplied({ restaurantId: previous.restaurantId, plan: previous.plan, result });
+      setPlan({ restaurantId: previous.restaurantId, value: previous.plan });
+      setInvalidPlanId("");
+      onApplied();
+    } catch (failure) {
+      const message = failure instanceof Error ? failure.message : "The plan application could not be confirmed.";
+      if (writeMayBeUncertain(failure)) {
+        const uncertain = { ...previous, status: "uncertain" as const, message: `The application result is uncertain. ${message} Retry the same plan with its original request key.` };
+        sessionStorage.setItem(REPLAN_APPLY_ATTEMPT_KEY, JSON.stringify(uncertain));
+        setApplyAttempt(uncertain);
+      } else {
+        const code = (failure as ApiError).code;
+        sessionStorage.removeItem(REPLAN_APPLY_ATTEMPT_KEY);
+        setApplyAttempt(null);
+        setApplyError(code === "stale_plan"
+          ? "This preview became stale and was not applied. Refresh availability, then create a new preview."
+          : code === "plan_already_applied"
+            ? "This plan was already applied with another request. Refresh availability and look up affected bookings for their current state."
+            : message);
+        if (code === "stale_plan" || code === "plan_already_applied") { setInvalidPlanId(previous.plan.plan_id); setApplied(null); onApplied(); }
+      }
+    }
+  };
+
+  const applyPlan = async () => {
+    if (applyForRestaurant?.status === "uncertain") { await sendApply(applyForRestaurant); return; }
+    if (pendingElsewhere || lockedHere) return;
+    if (!visiblePlan) return;
+    await sendApply({ restaurantId: restaurant.id, plan: visiblePlan, body: {}, key: crypto.randomUUID(), status: "sending" });
+  };
+
+  return <div className="recovery-content">
+    <p className="recovery-intro">Review a proposed table closure before applying it. The service keeps reservation dates, times, party sizes, and accepted terms.</p>
+    {pendingElsewhere && <p className="message message-warning" role="status" data-testid="replan-pending-elsewhere">A recovery request is unresolved for another restaurant. Select that restaurant to retry its original request before starting another plan.</p>}
+    <form className="recovery-form" data-testid="replan-form" onSubmit={previewSeating}>
+      <label>Table to close<select data-testid="replan-table" value={tableId} disabled={locked || Boolean(applyForRestaurant)} onChange={editClosure(setTableId)} required>{restaurant.tables.map((table) => <option key={table.id} value={table.id}>{table.label}</option>)}</select></label>
+      <label>Closure starts ({restaurant.timezone})<input data-testid="replan-from" type="datetime-local" value={fromLocal} disabled={locked || Boolean(applyForRestaurant)} onChange={editClosure(setFromLocal)} required /></label>
+      <label>Closure ends ({restaurant.timezone})<input data-testid="replan-to" type="datetime-local" value={toLocal} disabled={locked || Boolean(applyForRestaurant)} onChange={editClosure(setToLocal)} required /></label>
+      {previewForRestaurant?.status === "uncertain" && <p id="replan-preview-uncertain" className="message message-warning" role="status" data-testid="replan-preview-uncertain">{previewForRestaurant.message} Original closure: {String(previewForRestaurant.body.table_id)} · {formatRestaurantInstant(String(previewForRestaurant.body.from), restaurant.timezone)}–{formatRestaurantInstant(String(previewForRestaurant.body.to), restaurant.timezone)}.</p>}
+      {previewError && <p ref={previewErrorRef} id="replan-preview-error" className="message message-error" role="alert" tabIndex={-1} data-testid="replan-preview-error">{previewError}</p>}
+      {previewSuccess && <p className="message message-success" role="status" data-testid="replan-preview-success">{previewSuccess}</p>}
+      <button className="button button-primary" data-testid="replan-preview-submit" type="submit" disabled={pendingElsewhere || Boolean(applyForRestaurant) || (previewForRestaurant?.status === "sending")} aria-describedby={previewError ? "replan-preview-error" : previewForRestaurant?.status === "uncertain" ? "replan-preview-uncertain" : undefined}>
+        {previewForRestaurant?.status === "sending" ? "Preparing preview…" : previewForRestaurant?.status === "uncertain" ? "Retry same preview" : "Preview seating change"}
+      </button>
+    </form>
+    {visiblePlan && <section className="replan-preview" data-testid="replan-preview" aria-labelledby="replan-preview-title">
+      <h3 id="replan-preview-title">{visibleApplied ? "Applied seating plan" : "Read-only plan preview"}</h3>
+      <p data-testid="replan-closure">Close {tableLabel([visiblePlan.closure.table_id], restaurant)} from {formatRestaurantInstant(visiblePlan.closure.from, restaurant.timezone)} to {formatRestaurantInstant(visiblePlan.closure.to, restaurant.timezone)} · {restaurant.timezone}</p>
+      <p className="replan-metrics" data-testid="replan-plan-metrics">Restaurant revision {visiblePlan.restaurant_revision} · {visiblePlan.moved_count} bookings moved · {visiblePlan.unused_seats} unused seats</p>
+      <ol className="replan-assignments" data-testid="replan-assignments">
+        {visiblePlan.assignments.map((assignment) => {
+          const before = assignment.before_table_ids || (!assignment.changed ? assignment.table_ids : null);
+          return <li key={assignment.reference} data-testid={`replan-assignment-${assignment.reference}`}>
+            <strong>{assignment.reference}</strong>
+            <span>{assignment.changed ? "Table assignment changes" : "Table assignment stays the same"}</span>
+            <span>Before: {before ? tableLabel(before, restaurant) : "Prior table assignment is not available in this authorized preview."}</span>
+            <span>After: {tableLabel(assignment.table_ids, restaurant)}</span>
+          </li>;
+        })}
+      </ol>
+      {applyForRestaurant?.status === "uncertain" && <p id="replan-apply-uncertain" className="message message-warning" role="status" data-testid="replan-apply-uncertain">{applyForRestaurant.message} The original plan and key are retained; its outcome has not been assumed.</p>}
+      {applyError && <p ref={applyErrorRef} id="replan-apply-error" className="message message-error" role="alert" tabIndex={-1} data-testid="replan-apply-error">{applyError}</p>}
+      {visibleApplied && <div className="message message-success replan-applied" role="status" data-testid="replan-applied">
+        <strong>Plan applied. Reservation times and accepted terms were preserved.</strong>
+        <ul>{visibleApplied.result.reservations.map((reservation) => <li key={reservation.reference}>
+          {reservation.reference} · {reservation.starts_at_local.replace("T", " ")} · {tableLabel(tableIds(reservation), restaurant)}{reservation.accepted_terms ? ` · accepted policy ${reservation.accepted_terms.policy_version}` : ""}
+        </li>)}</ul>
+      </div>}
+      {!visibleApplied && invalidPlanId !== visiblePlan.plan_id && <button className="button button-primary" data-testid="replan-apply" type="button" onClick={() => void applyPlan()} disabled={applyForRestaurant?.status === "sending" || pendingElsewhere} aria-describedby={applyError ? "replan-apply-error" : applyForRestaurant?.status === "uncertain" ? "replan-apply-uncertain" : undefined}>
+        {applyForRestaurant?.status === "sending" ? "Applying plan…" : applyForRestaurant?.status === "uncertain" ? "Retry same apply" : "Apply this plan"}
+      </button>}
+    </section>}
+  </div>;
 }
 
 function PolicyEditor({ restaurant, policies, loading, loadError, signedIn, onPublished }: {
@@ -639,13 +868,19 @@ function SeriesPanel({ reservation, restaurant }: { reservation: Reservation; re
   const [count, setCount] = useState(4);
   const [intervalWeeks, setIntervalWeeks] = useState(1);
   const [attempt, setAttempt] = useState<WriteAttempt | null>(() => readWriteAttempt(SERIES_ATTEMPT_KEY));
+  const [amendFromIndex, setAmendFromIndex] = useState(0);
+  const [amendTime, setAmendTime] = useState("");
+  const [amendAttempt, setAmendAttempt] = useState<SeriesAmendAttempt | null>(() => readWriteAttempt(SERIES_AMEND_ATTEMPT_KEY) as SeriesAmendAttempt | null);
   const [error, setError] = useState("");
+  const [amendError, setAmendError] = useState("");
+  const [amendSuccess, setAmendSuccess] = useState("");
   const [loadError, setLoadError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
   const [cancelling, setCancelling] = useState("");
   const [cancelError, setCancelError] = useState("");
   const [cancelErrorReference, setCancelErrorReference] = useState("");
+  const amendErrorRef = useRef<HTMLParagraphElement>(null);
 
   const refresh = async (id: string) => {
     setLoading(true);
@@ -669,6 +904,53 @@ function SeriesPanel({ reservation, restaurant }: { reservation: Reservation; re
   useEffect(() => {
     if (seriesId) void refresh(seriesId);
   }, [seriesId, reservation.reference]);
+
+  useEffect(() => { if (amendError) revealFeedback(amendErrorRef.current); }, [amendError]);
+
+  const sendAmend = async (previous: SeriesAmendAttempt) => {
+    if (previous.seriesId !== seriesId) return;
+    const sending = { ...previous, status: "sending" as const, message: undefined };
+    setAmendAttempt(sending);
+    sessionStorage.setItem(SERIES_AMEND_ATTEMPT_KEY, JSON.stringify(sending));
+    setAmendError("");
+    setAmendSuccess("");
+    try {
+      const updated = await api<ReservationSeries>(`/series/${encodeURIComponent(previous.seriesId)}/amend`, {
+        method: "POST", headers: { "Idempotency-Key": previous.key }, body: JSON.stringify(previous.body),
+      });
+      sessionStorage.removeItem(SERIES_AMEND_ATTEMPT_KEY);
+      setAmendAttempt(null);
+      setSeries(updated);
+      setAmendSuccess("The amendment result is confirmed. Current visits are shown below.");
+    } catch (failure) {
+      const message = failure instanceof Error ? failure.message : "The series amendment could not be confirmed.";
+      if (writeMayBeUncertain(failure)) {
+        const uncertain = { ...previous, status: "uncertain" as const, message: `The result is uncertain. ${message} Retry the same change.` };
+        sessionStorage.setItem(SERIES_AMEND_ATTEMPT_KEY, JSON.stringify(uncertain));
+        setAmendAttempt(uncertain);
+      } else {
+        sessionStorage.removeItem(SERIES_AMEND_ATTEMPT_KEY);
+        setAmendAttempt(null);
+        setAmendError(message);
+        if ((failure as ApiError).code === "stale_revision") void refresh(seriesId);
+      }
+    }
+  };
+
+  const amend = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!series || !seriesId || amendAttempt?.status === "sending") return;
+    if (amendAttempt?.status === "uncertain") { await sendAmend(amendAttempt); return; }
+    setAmendError("");
+    setAmendSuccess("");
+    await sendAmend({
+      seriesId,
+      reference: reservation.reference,
+      body: { expected_revision: series.revision, from_index: Number(amendFromIndex), local_time: amendTime },
+      key: crypto.randomUUID(),
+      status: "sending",
+    });
+  };
 
   const send = async (previous: WriteAttempt) => {
     const sending = { ...previous, status: "sending" as const, message: undefined };
@@ -726,11 +1008,16 @@ function SeriesPanel({ reservation, restaurant }: { reservation: Reservation; re
 
   const pendingAnchor = typeof attempt?.body.anchor_reference === "string" ? attempt.body.anchor_reference : "";
   const hasSeries = Boolean(series && series.occurrences.some((item) => item.reference === reservation.reference));
+  const amendAttemptForSeries = Boolean(seriesId && amendAttempt?.seriesId === seriesId);
+  const amendAttemptElsewhere = Boolean(amendAttempt && !amendAttemptForSeries && (amendAttempt.status === "sending" || amendAttempt.status === "uncertain"));
+  const amendLockedHere = Boolean(amendAttemptForSeries && amendAttempt && (amendAttempt.status === "sending" || amendAttempt.status === "uncertain"));
+  const amendFromOccurrence = series?.occurrences.find((item) => item.index === amendFromIndex) || series?.occurrences[0];
+  const amendmentTime = amendTime || amendFromOccurrence?.reservation.starts_at_local.slice(11, 16) || "";
   return <section className="series-panel" data-testid="series-panel" aria-labelledby="series-title">
     <div className="section-heading"><div><p className="eyebrow">Make it a regular thing</p><h2 id="series-title">Recurring visits</h2></div></div>
     {loading && <p className="inline-status" role="status">Loading current occurrences…</p>}
     {loadError && <p className="message message-error" role="alert" data-testid="series-error">{loadError}</p>}
-    {!hasSeries && reservation.status === "confirmed" && <form className="series-form" data-testid="series-create-form" onSubmit={adopt}>
+    {!hasSeries && !seriesId && reservation.status === "confirmed" && <form className="series-form" data-testid="series-create-form" onSubmit={adopt}>
       <p>Adopt this confirmed reservation as occurrence zero. Each future date is checked against its actual opening hours, policy and availability.</p>
       <div className="series-fields">
         <label>Occurrences, including this booking<select data-testid="series-count" value={count} disabled={attempt?.status === "sending" || attempt?.status === "uncertain"} onChange={(event) => setCount(Number(event.target.value))}>{Array.from({ length: 11 }, (_, index) => index + 2).map((value) => <option key={value} value={value}>{value}</option>)}</select></label>
@@ -743,12 +1030,35 @@ function SeriesPanel({ reservation, restaurant }: { reservation: Reservation; re
     </form>}
     {hasSeries && series && <>
       <p className="series-meta" data-testid="series-summary">Agreement {series.series_id} · revision {series.revision} · every {series.interval_weeks} {series.interval_weeks === 1 ? "week" : "weeks"}</p>
+      {amendAttemptElsewhere && amendAttempt && <p className="message message-warning" role="status" data-testid="series-amend-pending-elsewhere">
+        An amendment result is uncertain for another series. <a href={`/lookup?reference=${encodeURIComponent(amendAttempt.reference)}&series_id=${encodeURIComponent(amendAttempt.seriesId)}`}>Open that series to retry its original change.</a>
+      </p>}
+      <form className="series-amend-form" data-testid="series-amend-form" onSubmit={amend}>
+        <h3>Change visits from a date</h3>
+        <p>Set a new local start time from one visit onward. Independently changed and cancelled visits keep their current status and time.</p>
+        <div className="series-amend-fields">
+          <label>First visit to change<select data-testid="series-amend-from" value={amendFromOccurrence?.index ?? 0} disabled={amendLockedHere || amendAttemptElsewhere} onChange={(event) => {
+            const index = Number(event.target.value);
+            const selectedOccurrence = series.occurrences.find((item) => item.index === index);
+            setAmendFromIndex(index);
+            if (selectedOccurrence) setAmendTime(selectedOccurrence.reservation.starts_at_local.slice(11, 16));
+            setAmendError(""); setAmendSuccess("");
+          }}>{series.occurrences.map((item) => <option key={item.index} value={item.index}>Visit {item.index + 1} · {item.reservation.starts_at_local.replace("T", " ")}{item.exception ? " · changed independently" : ""}{item.reservation.status === "cancelled" ? " · cancelled" : ""}</option>)}</select></label>
+          <label>New local start time<input data-testid="series-amend-time" type="time" value={amendmentTime} disabled={amendLockedHere || amendAttemptElsewhere} onChange={(event) => { setAmendTime(event.target.value); setAmendError(""); setAmendSuccess(""); }} required /></label>
+        </div>
+        {amendAttemptForSeries && amendAttempt?.status === "uncertain" && <p className="message message-warning" role="status" data-testid="series-amend-uncertain">{amendAttempt.message} Original change: visit {Number(amendAttempt.body.from_index) + 1} from {String(amendAttempt.body.local_time)}.</p>}
+        {amendError && <p ref={amendErrorRef} id="series-amend-error" className="message message-error" role="alert" tabIndex={-1} data-testid="series-amend-error">{amendError}</p>}
+        {amendSuccess && <p className="message message-success" role="status" data-testid="series-amend-success">{amendSuccess}</p>}
+        <button className="button button-primary" data-testid="series-amend-submit" type="submit" disabled={(amendAttemptForSeries && amendAttempt?.status === "sending") || amendAttemptElsewhere} aria-describedby={amendError ? "series-amend-error" : undefined}>
+          {amendAttemptForSeries && amendAttempt?.status === "sending" ? "Saving change…" : amendAttemptForSeries && amendAttempt?.status === "uncertain" ? "Retry same amendment" : "Apply series change"}
+        </button>
+      </form>
       <ol className="series-occurrences" data-testid="series-occurrences">
         {series.occurrences.map((occurrence) => <li key={occurrence.index} data-testid={`series-occurrence-${occurrence.index}`}>
           <div><strong>Visit {occurrence.index + 1}</strong><span>{occurrence.reservation.starts_at_local.replace("T", " · ")} · {tableLabel(tableIds(occurrence.reservation), restaurant)}</span><span>{occurrence.reservation.reference} · {occurrence.reservation.status}{occurrence.exception ? " · changed independently" : ""}</span></div>
           <a className="button button-outline" href={`/lookup?reference=${encodeURIComponent(occurrence.reference)}&series_id=${encodeURIComponent(series.series_id)}`}>View booking</a>
           {occurrence.exception && <span className="status-pill" data-testid={`series-exception-${occurrence.index}`}>Changed independently</span>}
-          {occurrence.reservation.status === "confirmed" && <button className="button button-outline" type="button" data-testid={`series-cancel-${occurrence.index}`} disabled={Boolean(cancelling)} onClick={() => void cancelOccurrence(occurrence.reference)}>{cancelling === occurrence.reference ? "Cancelling…" : "Cancel occurrence"}</button>}
+          {occurrence.reservation.status === "confirmed" && <button className="button button-outline" type="button" data-testid={`series-cancel-${occurrence.index}`} disabled={Boolean(cancelling) || amendLockedHere || amendAttemptElsewhere} onClick={() => void cancelOccurrence(occurrence.reference)}>{cancelling === occurrence.reference ? "Cancelling…" : "Cancel occurrence"}</button>}
           {cancelError && cancelErrorReference === occurrence.reference && <p className="message message-error" role="alert" data-testid={`series-cancel-error-${occurrence.index}`}>{cancelError}</p>}
         </li>)}
       </ol>
