@@ -1,0 +1,42 @@
+$ docker run --rm --network df-run-4e491bb89fc54467af849be9bd5543eb -v /mnt/c/Users/sahil/Desktop/BAND - Dark Factory/challenge:/work:ro -v /mnt/c/Users/sahil/Desktop/BAND - Dark Factory/submission/tablekeeper-v4/stage-2/demo/harness-s2-final-01:/out -e PYTHONDONTWRITEBYTECODE=1 -e PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 -e COLUMNS=200 -w /work df-harness-runner python -m pytest tablekeeper/test/stage_3 --base-url http://df-svc-227f8bbcf01a:8080 -p harness.plugin --rootdir tablekeeper/test -q -x --previous-base-url http://df-svc-227f8bbcf01a:8080 --harness-summary /out/stage-3.counts.json
+
+F
+=============================================================================================== FAILURES ===============================================================================================
+________________________________________________________________________ test_booking_carries_the_effective_policy_and_decision ________________________________________________________________________
+
+reset = <function reset.<locals>._reset at 0x7b88aef86020>, api = <function api.<locals>._api at 0x7b88aef862a0>
+
+    def test_booking_carries_the_effective_policy_and_decision(reset, api):
+        reset(fx.fixture(restaurants=[fx.managed_restaurant()]))
+        ada = api().authenticate(fx.ADA['email'], fx.ADA['password'])
+        date = fx.booking_date()
+>       published = assert_status(ada.post('/restaurants/r_anker/policies',
+            json=fx.policy(date, reservation_duration_minutes=60), idempotency_key=new_key()), 201).json()
+
+tablekeeper/test/stage_3/test_sample.py:23: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+resp = <Response [404 Not Found]>, expected = 201
+
+    def assert_status(resp: httpx.Response, expected: int) -> httpx.Response:
+>       assert resp.status_code == expected, \
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            f"expected {expected}, got {resp.status_code}. {_describe(resp)}"
+E       AssertionError: expected 201, got 404. POST /restaurants/r_anker/policies -> 404 '{"error":{"code":"not_found","message":"The route was not found."}}'
+
+harness/http.py:108: AssertionError
+=========================================================================================== warnings summary ===========================================================================================
+../usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:469
+  /usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:469: PytestCacheWarning: cache could not write path /work/tablekeeper/test/.pytest_cache/v/cache/nodeids: [Errno 30] Read-only file system: '/work/tablekeeper/test/.pytest_cache/v/cache/nodeids'
+    config.cache.set("cache/nodeids", sorted(self.cached_nodeids))
+
+../usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:423
+  /usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:423: PytestCacheWarning: cache could not write path /work/tablekeeper/test/.pytest_cache/v/cache/lastfailed: [Errno 30] Read-only file system: '/work/tablekeeper/test/.pytest_cache/v/cache/lastfailed'
+    config.cache.set("cache/lastfailed", self.lastfailed)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================================================================================= short test summary info ========================================================================================
+FAILED tablekeeper/test/stage_3/test_sample.py::test_booking_carries_the_effective_policy_and_decision - AssertionError: expected 201, got 404. POST /restaurants/r_anker/policies -> 404 '{"error":{...
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+1 failed, 2 warnings in 0.35s
+

@@ -1,0 +1,13 @@
+.git
+.venv
+venv
+__pycache__
+*.py[cod]
+.pytest_cache
+.env
+.env.*
+node_modules
+web/node_modules
+web/dist
+*.tsbuildinfo
+demo
