@@ -9,4 +9,5 @@ __pycache__
 node_modules
 web/node_modules
 web/dist
+*.tsbuildinfo
 demo
