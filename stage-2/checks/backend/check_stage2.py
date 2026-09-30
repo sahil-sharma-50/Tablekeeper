@@ -145,29 +145,39 @@ def main():
                         "starts_at_local": f"{day}T19:00", "party_size": 2}
             original = json_call(stage1_base, "POST", "/reservations", 201,
                                  old_body, token, "stage1-original")
+            move_body = {"moves": [{"reference": original["reference"], "table_id": "t_2"}]}
+            original_move = json_call(stage1_base, "POST", "/reservation-moves", 201,
+                                      move_body, token, "stage1-move")
             snapshot = json_call(stage1_base, "GET", "/_test/export", 200)
             assert "table_ids" not in original
+            assert "table_ids" not in original_move["reservations"][0]
 
             empty_call(stage2_base, "POST", "/_test/import", snapshot)
             imported = json_call(stage2_base, "GET", "/reservations", 200, token=token)
             old_row = imported["reservations"][0]
             assert old_row["reference"] == original["reference"]
             assert old_row["reservation_id"] == original["reservation_id"]
-            assert old_row["table_ids"] == ["t_1"] and old_row["table_id"] == "t_1"
+            assert old_row["table_ids"] == ["t_2"] and old_row["table_id"] == "t_2"
             old_replay = json_call(stage2_base, "POST", "/reservations", 200,
                                    old_body, token, "stage1-original")
-            assert old_replay["reference"] == original["reference"]
-            assert old_replay["table_ids"] == ["t_1"]
+            assert old_replay == original
+            old_move_replay = json_call(stage2_base, "POST", "/reservation-moves", 200,
+                                        move_body, token, "stage1-move")
+            assert old_move_replay == original_move
 
             upgraded = copy.deepcopy(snapshot)
             upgraded["state"]["restaurants"][0]["combinable"] = COMBINABLE
             empty_call(stage2_base, "POST", "/_test/import", upgraded)
             imported = json_call(stage2_base, "GET", "/reservations", 200, token=token)
             assert imported["reservations"][0]["reference"] == original["reference"]
+            assert imported["reservations"][0]["table_ids"] == ["t_2"]
             assert json_call(stage2_base, "GET", "/restaurants/r_anker", 200)["combinable"] == COMBINABLE
             old_replay = json_call(stage2_base, "POST", "/reservations", 200,
                                    old_body, token, "stage1-original")
-            assert old_replay["reference"] == original["reference"]
+            assert old_replay == original
+            old_move_replay = json_call(stage2_base, "POST", "/reservation-moves", 200,
+                                        move_body, token, "stage1-move")
+            assert old_move_replay == original_move
 
             query = urllib.parse.urlencode({"restaurant_id": "r_anker", "date": day,
                                             "party_size": 6})

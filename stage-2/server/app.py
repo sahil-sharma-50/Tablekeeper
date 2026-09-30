@@ -241,7 +241,7 @@ def replay(state: dict[str, Any], uid: str, path: str, key: str,
         if (receipt["user_id"], receipt["path"], receipt["key"]) == (uid, path, key):
             if not same_json_value(receipt["body"], body):
                 error(409, "idempotency_key_reuse", "This key belongs to a different request.")
-            return _public_receipt_response(receipt["response"])
+            return receipt["response"]
     return None
 
 
@@ -547,15 +547,6 @@ def public_reservation(reservation: dict[str, Any]) -> dict[str, Any]:
               if key not in ("user_id", "table_id", "table_ids")}
     result.update(_table_fields(_reservation_table_ids(reservation)))
     return result
-
-
-def _public_receipt_response(response: dict[str, Any]) -> dict[str, Any]:
-    if isinstance(response.get("reservations"), list):
-        return {**response, "reservations": [public_reservation(item)
-                                             for item in response["reservations"]]}
-    if "table_id" in response or "table_ids" in response:
-        return public_reservation(response)
-    return response
 
 
 def _new_id(state: dict[str, Any], prefix: str, field: str) -> str:
