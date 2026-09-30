@@ -1,0 +1,17 @@
+{
+  "viewport": [
+    1280,
+    720
+  ],
+  "scrollY": 0,
+  "alert": {
+    "text": "Email or password is incorrect.",
+    "visible": true,
+    "top": 506,
+    "bottom": 546,
+    "insideViewport": true
+  },
+  "headerBottom": 76,
+  "focusedAlert": true,
+  "formValueIncluded": false
+}

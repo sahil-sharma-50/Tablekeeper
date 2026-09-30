@@ -1,0 +1,19 @@
+{
+  "exists": true,
+  "label": "C + A, 20:00, unavailable",
+  "disabled": true,
+  "available": "false",
+  "rect": {
+    "x": 1238.800048828125,
+    "y": 1097.5999755859375,
+    "bottom": 1132.5999755859375,
+    "width": 62,
+    "height": 35
+  },
+  "alert": null,
+  "viewport": {
+    "width": 375,
+    "height": 812
+  },
+  "scrollY": 0
+}

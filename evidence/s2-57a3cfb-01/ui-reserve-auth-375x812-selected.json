@@ -1,0 +1,18 @@
+{
+  "viewport": {
+    "width": 375,
+    "height": 812
+  },
+  "scrollY": 1044.800048828125,
+  "alertText": "Please sign in before completing your reservation. Your table selection is saved.",
+  "alertRole": "alert",
+  "alertFocused": true,
+  "alertRect": {
+    "top": 503.3999938964844,
+    "bottom": 562.1499938964844
+  },
+  "alertVisible": true,
+  "immediatelyAfterSignInLink": true,
+  "reserveEnabled": true,
+  "selectedCell": "C + A, 16:00, available"
+}

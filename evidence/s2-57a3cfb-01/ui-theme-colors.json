@@ -1,0 +1,99 @@
+{
+  "viewport": [
+    1280,
+    720
+  ],
+  "themeButton": "Switch to light theme",
+  "root": {
+    "background": "rgb(28, 33, 26)",
+    "color": "rgb(236, 235, 221)",
+    "vars": []
+  },
+  "elements": [
+    {
+      "tag": "BODY",
+      "class": "",
+      "background": "rgb(28, 33, 26)",
+      "color": "rgb(236, 235, 221)",
+      "border": "rgb(236, 235, 221)"
+    },
+    {
+      "tag": "HEADER",
+      "class": "site-header",
+      "background": "rgb(28, 33, 26)",
+      "color": "rgb(236, 235, 221)",
+      "border": "rgb(236, 235, 221) rgb(236, 235, 221) rgb(69, 75, 63)"
+    },
+    {
+      "tag": "MAIN",
+      "class": "page-shell auth-page",
+      "background": "rgba(0, 0, 0, 0)",
+      "color": "rgb(236, 235, 221)",
+      "border": "rgb(236, 235, 221)"
+    },
+    {
+      "tag": "SECTION",
+      "class": "auth-art",
+      "background": "rgba(0, 0, 0, 0)",
+      "color": "rgb(236, 235, 221)",
+      "border": "rgb(236, 235, 221)"
+    },
+    {
+      "tag": "P",
+      "class": "eyebrow",
+      "background": "rgba(0, 0, 0, 0)",
+      "color": "rgb(233, 154, 124)",
+      "border": "rgb(233, 154, 124)"
+    },
+    {
+      "tag": "SECTION",
+      "class": "auth-card",
+      "background": "rgb(38, 44, 35)",
+      "color": "rgb(236, 235, 221)",
+      "border": "rgb(69, 75, 63)"
+    },
+    {
+      "tag": "A",
+      "class": "back-link",
+      "background": "rgba(0, 0, 0, 0)",
+      "color": "rgb(176, 179, 163)",
+      "border": "rgb(176, 179, 163)"
+    },
+    {
+      "tag": "P",
+      "class": "eyebrow",
+      "background": "rgba(0, 0, 0, 0)",
+      "color": "rgb(233, 154, 124)",
+      "border": "rgb(233, 154, 124)"
+    },
+    {
+      "tag": "P",
+      "class": "auth-intro",
+      "background": "rgba(0, 0, 0, 0)",
+      "color": "rgb(176, 179, 163)",
+      "border": "rgb(176, 179, 163)"
+    },
+    {
+      "tag": "BUTTON",
+      "class": "button button-primary auth-submit",
+      "background": "rgb(233, 154, 124)",
+      "color": "rgb(28, 33, 26)",
+      "border": "rgba(0, 0, 0, 0)"
+    },
+    {
+      "tag": "P",
+      "class": "auth-switch",
+      "background": "rgba(0, 0, 0, 0)",
+      "color": "rgb(176, 179, 163)",
+      "border": "rgb(176, 179, 163)"
+    },
+    {
+      "tag": "FOOTER",
+      "class": "site-footer",
+      "background": "rgba(0, 0, 0, 0)",
+      "color": "rgb(176, 179, 163)",
+      "border": "rgb(69, 75, 63) rgb(176, 179, 163) rgb(176, 179, 163)"
+    }
+  ],
+  "sourceSansLoaded": true
+}

@@ -1,0 +1,10 @@
+{
+  "method": "delayed older availability response (800 ms); newer date submitted while older response pending",
+  "olderRequestsDelayed": 1,
+  "formDate": "2026-10-02",
+  "expectedFinalDate": "2026-10-02",
+  "pair18Available": true,
+  "pair18Disabled": false,
+  "cellCount": 84,
+  "searchEnabled": true
+}

@@ -1,0 +1,24 @@
+{
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "scroll": {
+    "width": 1440,
+    "height": 900
+  },
+  "font": "\"Source Sans 3\", sans-serif",
+  "art": {
+    "natural": [
+      1254,
+      1254
+    ],
+    "box": [
+      380,
+      380
+    ],
+    "fit": "contain"
+  },
+  "horizontalOverflow": false,
+  "verticalOverflow": false
+}

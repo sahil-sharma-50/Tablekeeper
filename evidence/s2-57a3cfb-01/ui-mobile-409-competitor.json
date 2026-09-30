@@ -1,0 +1,7 @@
+{
+  "signupStatus": 201,
+  "loginStatus": 200,
+  "competitorBookingStatus": 401,
+  "bookingError": "unauthenticated",
+  "identityPersisted": false
+}

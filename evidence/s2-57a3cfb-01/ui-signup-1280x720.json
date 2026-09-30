@@ -1,0 +1,33 @@
+{
+  "viewport": {
+    "width": 1280,
+    "height": 720
+  },
+  "url": "/signup",
+  "doc": {
+    "scrollWidth": 1280,
+    "scrollHeight": 720,
+    "bodyScrollHeight": 720
+  },
+  "font": {
+    "body": "\"Source Sans 3\", sans-serif",
+    "h1": "\"Source Sans 3\", sans-serif",
+    "h2": "\"Source Sans 3\", sans-serif",
+    "loaded": true
+  },
+  "artwork": {
+    "alt": "A table being prepared for a shared meal",
+    "naturalWidth": 1254,
+    "naturalHeight": 1254,
+    "box": {
+      "x": 159.10000610351562,
+      "y": 118.7125015258789,
+      "width": 380,
+      "height": 380
+    },
+    "objectFit": "contain",
+    "objectPosition": "50% 50%"
+  },
+  "horizontalOverflow": false,
+  "verticalOverflow": false
+}

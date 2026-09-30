@@ -1,0 +1,14 @@
+{
+  "themeButton": "Switch to dark theme",
+  "body": {
+    "background": "rgb(248, 245, 239)",
+    "color": "rgb(48, 61, 51)"
+  },
+  "card": {
+    "background": "rgb(255, 253, 248)",
+    "color": "rgb(48, 61, 51)",
+    "border": "rgb(222, 222, 209)"
+  },
+  "eyebrow": "rgb(154, 79, 57)",
+  "sourceSansLoaded": true
+}

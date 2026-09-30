@@ -1,0 +1,11 @@
+{
+  "step": "A",
+  "role": null,
+  "type": null,
+  "label": "Your booking",
+  "focusVisible": true,
+  "viewport": {
+    "width": 768,
+    "height": 1024
+  }
+}

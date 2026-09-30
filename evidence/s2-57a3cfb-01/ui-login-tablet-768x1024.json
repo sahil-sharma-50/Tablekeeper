@@ -1,0 +1,34 @@
+{
+  "viewport": {
+    "width": 768,
+    "height": 1024
+  },
+  "document": {
+    "width": 768,
+    "height": 1024
+  },
+  "horizontalOverflow": false,
+  "font": "\"Source Sans 3\", sans-serif",
+  "mainBox": {
+    "x": 28,
+    "y": 76,
+    "width": 712,
+    "height": 874
+  },
+  "images": [
+    {
+      "alt": "A warmly lit restaurant ready for guests",
+      "fit": "contain",
+      "natural": [
+        1254,
+        1254
+      ],
+      "box": {
+        "x": 28,
+        "y": 302.9250183105469,
+        "width": 305.9250183105469,
+        "height": 305.9250183105469
+      }
+    }
+  ]
+}

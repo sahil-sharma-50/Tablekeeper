@@ -1,0 +1,33 @@
+{
+  "viewport": [
+    375,
+    812
+  ],
+  "scrollY": 44,
+  "documentHeight": 1099,
+  "active": {
+    "tag": "P",
+    "aria": null
+  },
+  "alert": {
+    "text": "Email or password is incorrect.",
+    "role": "alert",
+    "visible": true,
+    "box": [
+      35,
+      836,
+      290,
+      40
+    ],
+    "insideViewport": false,
+    "describedBy": null
+  },
+  "headerBottom": 65,
+  "activeBox": [
+    35,
+    836,
+    290,
+    40
+  ],
+  "signupFieldsPreserved": true
+}

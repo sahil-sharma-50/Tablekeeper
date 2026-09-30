@@ -1,0 +1,18 @@
+{
+  "viewport": [
+    1280,
+    720
+  ],
+  "scrollY": 354.3999938964844,
+  "alert": {
+    "text": "Please sign in before completing your reservation. Your table selection is saved.",
+    "top": 550,
+    "bottom": 609,
+    "insideViewport": true,
+    "role": "alert"
+  },
+  "headerBottom": 76,
+  "focusedAlert": false,
+  "buttonVisible": true,
+  "selectedSlot": "C + A, 19:00, available"
+}

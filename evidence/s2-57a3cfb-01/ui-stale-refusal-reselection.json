@@ -1,0 +1,14 @@
+{
+  "source_sha": "57a3cfb99aaf53dcf63628640c4b17d26fccf0fb",
+  "conflict_response": 409,
+  "alert_text": "That table is already reserved.",
+  "conflicted_cell_disabled": true,
+  "conflicted_cell_available": false,
+  "booking_fields_preserved": true,
+  "alert_cleared_after_new_selection": true,
+  "new_selection_pressed": true,
+  "new_selection_available": true,
+  "new_selection_disabled": false,
+  "competitor_booking_committed": true,
+  "private_account_reference_token_values_recorded": false
+}

@@ -1,0 +1,20 @@
+{
+  "viewport": [
+    375,
+    812
+  ],
+  "scrollY": 123.19999694824219,
+  "documentHeight": 1178,
+  "alert": {
+    "text": "That email is already registered.",
+    "visible": true,
+    "top": 836,
+    "bottom": 877,
+    "insideViewport": false,
+    "role": "alert"
+  },
+  "headerBottom": 65,
+  "focusedAlert": true,
+  "activeTag": "P",
+  "formPresent": true
+}

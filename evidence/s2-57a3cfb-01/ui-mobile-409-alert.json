@@ -1,0 +1,30 @@
+{
+  "viewport": {
+    "width": 375,
+    "height": 812
+  },
+  "scrollY": 904,
+  "alertText": "That table is already reserved.",
+  "alertFocused": false,
+  "focusTag": "BODY",
+  "focusRole": null,
+  "alertRect": {
+    "x": 34.79999923706055,
+    "y": 597.4750366210938,
+    "right": 325.1999931335449,
+    "bottom": 637.6500358581543,
+    "width": 290.3999938964844,
+    "height": 40.17499923706055
+  },
+  "alertVisible": true,
+  "staleCell": {
+    "disabled": true,
+    "available": "false",
+    "aria": "C + A, 18:00, unavailable"
+  },
+  "bookingFieldsPreserved": {
+    "date": "2026-10-01",
+    "party": "5"
+  },
+  "referenceExposedInEvidence": false
+}

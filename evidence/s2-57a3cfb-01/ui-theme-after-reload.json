@@ -1,0 +1,10 @@
+{
+  "viewport": [
+    1280,
+    720
+  ],
+  "themeButton": "Switch to light theme",
+  "bodyBackground": "rgb(28, 33, 26)",
+  "bodyColor": "rgb(236, 235, 221)",
+  "font": "\"Source Sans 3\", sans-serif"
+}

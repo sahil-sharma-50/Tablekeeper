@@ -1,0 +1,11 @@
+{
+  "step": "BUTTON",
+  "role": null,
+  "type": null,
+  "label": "Switch to dark theme",
+  "focusVisible": true,
+  "viewport": {
+    "width": 768,
+    "height": 1024
+  }
+}

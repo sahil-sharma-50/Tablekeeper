@@ -1,0 +1,31 @@
+{
+  "viewport": [
+    375,
+    812
+  ],
+  "scroll": [
+    360,
+    1022
+  ],
+  "fonts": {
+    "body": "\"Source Sans 3\", sans-serif",
+    "h1": "\"Source Sans 3\", sans-serif",
+    "h2": "\"Source Sans 3\", sans-serif",
+    "sourceSansLoaded": true
+  },
+  "art": {
+    "natural": [
+      1254,
+      1254
+    ],
+    "box": [
+      300,
+      300
+    ],
+    "fit": "contain",
+    "ratioNatural": 1,
+    "ratioBox": 1
+  },
+  "overflowX": false,
+  "overflowY": true
+}

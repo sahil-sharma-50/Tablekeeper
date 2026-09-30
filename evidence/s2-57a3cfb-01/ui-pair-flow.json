@@ -1,0 +1,22 @@
+{
+  "source_sha": "57a3cfb99aaf53dcf63628640c4b17d26fccf0fb",
+  "scenario": "pair committed-response loss, retry, lookup, and cancellation",
+  "tables": ["C", "A"],
+  "party_size": 5,
+  "local_start": "2026-10-01T19:00",
+  "post_committed_before_response_drop": true,
+  "retry_same_body": true,
+  "retry_same_idempotency_key": true,
+  "original_confirmation_restored": true,
+  "lookup_status": "confirmed",
+  "lookup_labels": ["C", "A"],
+  "lookup_local_start": "2026-10-01T19:00",
+  "cancel_button_label": "Cancel reservation",
+  "cancel_button_outline": true,
+  "cancel_clicks": 1,
+  "cancel_dialog": false,
+  "cancel_button_removed": true,
+  "cancelled_status_text": "cancelled",
+  "both_tables_available_after_cancel": true,
+  "private_account_reference_token_values_recorded": false
+}

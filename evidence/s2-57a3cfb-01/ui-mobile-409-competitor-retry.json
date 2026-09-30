@@ -1,0 +1,6 @@
+{
+  "signupStatus": 201,
+  "loginStatus": 200,
+  "competitorBookingStatus": 409,
+  "bookingError": "table_unavailable"
+}

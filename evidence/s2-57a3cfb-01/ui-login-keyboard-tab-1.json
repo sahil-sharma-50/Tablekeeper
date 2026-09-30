@@ -1,0 +1,11 @@
+{
+  "step": "A",
+  "role": null,
+  "type": null,
+  "label": "Tablekeeper home",
+  "focusVisible": true,
+  "viewport": {
+    "width": 768,
+    "height": 1024
+  }
+}
