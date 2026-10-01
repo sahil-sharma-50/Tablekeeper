@@ -7,6 +7,9 @@ __pycache__/
 dist/
 *.pyc
 *.sqlite*
+*.tsbuildinfo
+.playwright-cli/
+.playwright-mcp/
 evidence/private/
 evidence/fresh-clone/
 evidence/**/raw-export*.json

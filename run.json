@@ -1,0 +1,12 @@
+{
+  "name": "Tablekeeper",
+  "room_id": "018b7708-b06b-404a-8c00-2cc53c64a9d3",
+  "auth_mode": "subscription",
+  "seats": [
+    {"name": "Engineering Lead", "handle": "sahilatfau/engineering-lead", "harness": "Codex", "model": "gpt-6.1-sol", "effort": "medium", "mandate": "mandates/engineering-lead.md"},
+    {"name": "Backend Engineer", "handle": "sahilatfau/backend-engineer", "harness": "Codex", "model": "gpt-6-luna", "effort": "xhigh", "mandate": "mandates/backend-engineer.md"},
+    {"name": "Frontend Engineer", "handle": "sahilatfau/frontend-engineer", "harness": "Codex", "model": "gpt-6-luna", "effort": "xhigh", "mandate": "mandates/frontend-engineer.md"},
+    {"name": "QA Engineer", "handle": "sahilatfau/qa-engineer", "harness": "Codex", "model": "gpt-6-luna", "effort": "xhigh", "mandate": "mandates/qa-engineer.md"}
+  ],
+  "usage": {"tokens": null, "billing": null, "note": "Provider usage and actual billing were not measured."}
+}
