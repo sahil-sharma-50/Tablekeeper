@@ -1,0 +1,37 @@
+{
+  "revision": "ec7d6c1a4f34cf7ac2518d5086f1011bd7481aaf",
+  "runbooks": [
+    {
+      "stage": 1,
+      "port": 8102,
+      "build": "pass",
+      "health": "pass",
+      "routes_assets": 1,
+      "demo_reset": "not applicable"
+    },
+    {
+      "stage": 2,
+      "port": 8102,
+      "build": "pass",
+      "health": "pass",
+      "routes_assets": 9,
+      "demo_reset": "pass"
+    },
+    {
+      "stage": 3,
+      "port": 8103,
+      "build": "pass",
+      "health": "pass",
+      "routes_assets": 9,
+      "demo_reset": "pass"
+    },
+    {
+      "stage": 4,
+      "port": 8104,
+      "build": "pass",
+      "health": "pass",
+      "routes_assets": 9,
+      "demo_reset": "pass"
+    }
+  ]
+}

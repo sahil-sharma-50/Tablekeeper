@@ -49,6 +49,8 @@ The final clean-clone isolated acceptance recorded:
 
 No claimed suite failed, errored or skipped. Stage 4's six shipped checks are smoke coverage. Independent checks additionally cover optimizer objectives, concurrency, rollback, populated imports, DST, authorization, retry recovery and actual native browser zoom. See [COVERAGE.md](COVERAGE.md), [DELIVERY.md](DELIVERY.md), [SUBMISSION-FACTS.md](SUBMISSION-FACTS.md) and [the final QA report](evidence/final-efcfd4b-01/qa-final-recheck.md). Genuine failure evidence is retained; future-stage probes against earlier snapshots are distinguished from claimed-stage failures.
 
+Submission packaging was also checked from a fresh `git clone --no-local` at `ec7d6c1a4f34cf7ac2518d5086f1011bd7481aaf`. The offline submission gates passed, isolated `--all` reproduced all four claimed chains above, and every stage built and launched following its own runbook. Stages 2–4 additionally served their routes, bundled assets and opt-in demo fixtures. See [packaging validation](evidence/packaging-ec7d6c1/VALIDATION.md).
+
 To reproduce organizer checks, obtain the official [challenge repository](https://github.com/band-ai/dark-factory-wearedevs), pinned for this run to `803560d2a678ace1414465c098eb0ab5380ffade`, and install its harness according to its participant guide. Run from that challenge checkout, with Python 3.12 and Docker available:
 
 ```sh

@@ -36,7 +36,7 @@ Final preview: http://localhost:8102, container `tablekeeper-stage4-final-previe
 
 The exact preview contract supplies proposed assignments, not plan-bound prior assignments. Moved rows disclose unavailable prior seating instead of inventing a before-state. Accepted times and terms remain preserved. Native Chromium tab zoom 2.0 was verified with an isolated temporary extension/profile, including normal pointer and keyboard selection at outer 375×812; CSS viewport emulation was not counted as native zoom acceptance.
 
-## Submission gates still requiring the participant
+## Historical submission gates before packaging
 
 The official offline submission check was run against this repository with Python 3.12:
 
@@ -45,3 +45,7 @@ The official offline submission check was run against this repository with Pytho
 It exited 1 with exactly 11 reported issues: missing README.md, missing FACTORY.md, missing authentic room.json, and missing Harness:/Model: headers in each of the four mandate files. The participant guide requires the participant to author README.md and FACTORY.md and download the whole authentic room unchanged. These files were not fabricated. The four generic mandates were verified byte-for-byte against the supplied inputs and left unchanged as explicitly instructed; `run.json` records harness/model facts but does not satisfy the mandate-header gate.
 
 This is a functionally accepted local application delivery, not a completed public submission. Authentic room export, participant narratives, resolution of the unchanged-mandate header gate, public repository publication and event submission remain participant gates. Original implementation commits and genuine defect evidence are preserved.
+
+### Packaging update — October 1, 2026
+
+The preceding gate result records the pre-packaging state. The participant subsequently supplied the authentic room export and requested README/FACTORY drafts and accurate mandate headers. Those additions resolved the 11 offline gate issues; instruction bodies and accepted application source were preserved. The offline check passed both locally and from a fresh clone. The fresh clone also passed every claimed isolated stage chain and all four documented Docker runbooks. See [packaging validation](evidence/packaging-ec7d6c1/VALIDATION.md). Participant narrative review, public publication, video and event submission remain outstanding.
