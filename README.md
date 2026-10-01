@@ -54,8 +54,8 @@ Submission packaging was also checked from a fresh `git clone --no-local` at `ec
 To reproduce organizer checks, obtain the official [challenge repository](https://github.com/band-ai/dark-factory-wearedevs), pinned for this run to `803560d2a678ace1414465c098eb0ab5380ffade`, and install its harness according to its participant guide. Run from that challenge checkout, with Python 3.12 and Docker available:
 
 ```sh
-python -m harness check /absolute/path/to/tablekeeper-v4 --track tablekeeper
-python -m harness run --track tablekeeper --repo /absolute/path/to/tablekeeper-v4 --all --mode isolated --out /absolute/path/to/new-evidence-directory
+python -m harness check /absolute/path/to/tablekeeper --track tablekeeper
+python -m harness run --track tablekeeper --repo /absolute/path/to/tablekeeper --all --mode isolated --out /absolute/path/to/new-evidence-directory
 ```
 
 Use a new output directory each time. Isolated evaluation supplies 2 CPU and 2 GiB with outbound network blocked. Image builds may fetch their pinned dependencies. Historical evidence contains the original workspace path; the repository was subsequently moved without changing accepted application source.

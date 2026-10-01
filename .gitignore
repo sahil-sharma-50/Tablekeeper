@@ -14,3 +14,26 @@ evidence/private/
 evidence/fresh-clone/
 evidence/**/raw-export*.json
 evidence/**/raw-fixture*.json
+
+# Local organizer tooling and workspace inputs; not part of the submission.
+/challenge/
+/factory/
+/Tablekeeper.json
+/hackathon_description.md
+/IMPLEMENTATION_PROGRESS.md
+/tablekeeper_plan.md
+/practice/
+/submission/
+/runs/
+/.superpowers/
+/output/
+
+# Local build, browser and editor caches.
+.venv*/
+.vscode/
+.idea/
+test-results/
+playwright-report/
+Thumbs.db
+Desktop.ini
+*.tmp
