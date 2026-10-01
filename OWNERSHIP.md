@@ -1,9 +1,11 @@
 # Delivery ownership
 
-Workspace: C:\Users\sahil\Desktop\BAND - Dark Factory\submission\tablekeeper-v4
+This document records ownership during the completed autonomous run. The current Tablekeeper repository root is `C:\Users\sahil\Desktop\BAND - Dark Factory`; a public clone may use any directory name. Current setup and commands are in [README.md](README.md) and [FACTORY.md](FACTORY.md).
 
-Read-only input: C:\Users\sahil\Desktop\BAND - Dark Factory\factory\tablekeeper-v4
-Pinned challenge: C:\Users\sahil\Desktop\BAND - Dark Factory\challenge at 803560d2a678ace1414465c098eb0ab5380ffade.
+Original run workspace: C:\Users\sahil\Desktop\BAND - Dark Factory\submission\tablekeeper-v4
+
+Original read-only input: C:\Users\sahil\Desktop\BAND - Dark Factory\factory\tablekeeper-v4
+Original pinned challenge location: C:\Users\sahil\Desktop\BAND - Dark Factory\challenge at 803560d2a678ace1414465c098eb0ab5380ffade. Local organizer tooling was subsequently moved to sibling folder `BAND - Dark Factory-local-tools`; it is not part of the submitted repository.
 
 The full assignment is preserved in requirements.md. All four embedded specifications match the pinned originals after CRLF normalization. TASK.md has raw SHA256 44c1a170d7beab5f26d0c2bc683edce0b992a5500d33c8f7efa5d3c02255ce42; normalizing CRLF to LF produces the dispatched SHA256 370f2b750a2e221f064f9452d0de6b716a50fc00f2bfea98f290e6abefd8489b. Inputs remain untouched.
 
@@ -22,4 +24,4 @@ Commit protocol: request lead token before staging or committing; stage explicit
 
 Acceptance requires official isolated stage suites plus independent uncovered-contract checks. QA preserves real failures and routes defects to owner and lead; only committed fixes can pass review. Final fresh clone runs --all. No source/test copying from old results or other products, no nested agents, no secrets or populated exports in logs.
 
-Human-authored README.md, FACTORY.md, authentic room download and publication remain participant gates. Mandates are copied unchanged as requested; their missing Harness/Model header lines must be reported honestly rather than silently altering official inputs.
+At run completion, participant narratives, authentic room download, mandate headers and publication were pending. Subsequent packaging added README.md and FACTORY.md drafts, the participant-supplied authentic room export, and accurate Harness/Model headers while preserving mandate instruction bodies. Participant narrative review, public publication, video and event submission remain outstanding; see [SUBMISSION-FACTS.md](SUBMISSION-FACTS.md).

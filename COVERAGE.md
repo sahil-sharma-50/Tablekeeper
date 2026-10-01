@@ -1,5 +1,7 @@
 # Tablekeeper acceptance coverage
 
+Recorded commands and machine paths below describe the original autonomous run before repository relocation. They are retained as evidence, not current directory requirements. For a new clone, use [README.md](README.md) and the portable run/evidence protocol at the end of this file.
+
 ## Authority and current evidence
 
 - Requirements source: `requirements.md` at `a9c7024bfdaf39cdb8ae25018862d25c6719550b` (workspace HEAD during preparation).
@@ -173,10 +175,10 @@ Stage 2 is independently accepted at application commit `64d0f501f733f773c335709
 
 ## Run/evidence protocol
 
-On each lead handoff, record the full committed source SHA before testing. Run the official harness from `C:\Users\sahil\Desktop\BAND - Dark Factory` using a fresh evidence directory, for example:
+On each lead handoff, record the full committed source SHA before testing. Run the official harness from a separate checkout of the pinned challenge repository using a fresh evidence directory, for example:
 
-```powershell
-wsl -d Ubuntu-24.04 -u bandbuilder --exec bash factory/harness.sh run --track tablekeeper --repo '/mnt/c/Users/sahil/Desktop/BAND - Dark Factory/submission/tablekeeper-v4' --stage 1 --mode isolated --out '/mnt/c/Users/sahil/Desktop/BAND - Dark Factory/submission/tablekeeper-v4/evidence/stage1-<unique-id>'
+```sh
+python -m harness run --track tablekeeper --repo /absolute/path/to/tablekeeper --stage 1 --mode isolated --out /absolute/path/to/new-evidence-directory
 ```
 
 Repeat with the accepted stage number, then run final `--all` against a fresh clone. Never reuse an `--out` directory. Save compact complete logs and run metadata under `evidence/`; redact tokens, passwords, hashes and populated export bodies. Do not turn an aesthetic issue into a functional exception. Do not rerun unchanged source just for documentation-only revisions; link the existing exact-SHA evidence.
