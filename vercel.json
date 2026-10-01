@@ -1,0 +1,11 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "fastapi",
+  "buildCommand": "python vercel/build.py",
+  "functions": {
+    "vercel/entrypoint.py": {
+      "maxDuration": 30,
+      "includeFiles": "stage-4/{server/**,web/dist/**,demo/multi-day-demo.json}"
+    }
+  }
+}

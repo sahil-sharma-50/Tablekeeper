@@ -37,3 +37,7 @@ playwright-report/
 Thumbs.db
 Desktop.ini
 *.tmp
+/manager_details.md
+/presentation/
+
+.vercel/

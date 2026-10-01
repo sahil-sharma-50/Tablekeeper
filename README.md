@@ -6,6 +6,8 @@ All four stage snapshots are included. The factory's independent QA accepted eac
 
 ![Tablekeeper — restaurant reservations built by a four-agent BAND factory](assets/cover_image.png)
 
+**Live demo:** [tablekeeper-band.vercel.app](https://tablekeeper-band.vercel.app/). [Vercel deployment instructions](vercel/README.md) describe the separate hosting adapter, shared database and seeded demo manager.
+
 ## Start the final product
 
 Prerequisite: Docker with internet access for image builds. No Node or Python installation is required to run the application. The running service requires no outbound internet access.

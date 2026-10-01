@@ -36,6 +36,8 @@ Historical final preview during delivery: http://localhost:8102, container `tabl
 
 After publication, the participant requested a named restaurant and ready-to-use manager credentials for local recording. The optional Stage 4 demo fixture was updated to **Nobu (Demo)** with one explicitly authorized manager and no reservations. The root Compose quickstart loads it only after health succeeds and only into empty state. These demo/packaging updates change no application source or default standalone startup state. Historical acceptance evidence predates this demo update.
 
+The participant later requested a public Vercel demo. The separate root hosting adapter in `vercel/` loads the same Stage 4 application, replaces its state-storage functions with shared Postgres transactions, seeds the optional fixture once and removes public evaluation controls. These hosting changes are outside the judged stage snapshots and their historical acceptance evidence. The standalone snapshots retain their original local storage and offline runtime behavior.
+
 The exact preview contract supplies proposed assignments, not plan-bound prior assignments. Moved rows disclose unavailable prior seating instead of inventing a before-state. Accepted times and terms remain preserved. Native Chromium tab zoom 2.0 was verified with an isolated temporary extension/profile, including normal pointer and keyboard selection at outer 375×812; CSS viewport emulation was not counted as native zoom acceptance.
 
 ## Historical submission gates before packaging
