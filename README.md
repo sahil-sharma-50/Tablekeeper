@@ -10,7 +10,28 @@ All four stage snapshots are included. The factory's independent QA accepted eac
 
 Prerequisite: Docker with internet access for image builds. No Node or Python installation is required to run the application. The running service requires no outbound internet access.
 
-From the repository root:
+### Ready-to-use local demo
+
+From the repository root, run:
+
+```sh
+docker compose up --build -d
+```
+
+Open **http://localhost:8104/**. Compose waits for the service, then loads the bundled **Nobu (Demo)** restaurant: seven-day opening hours, three tables, a declared table pair and an authorized manager. The data loader skips existing state rather than replacing it. If you already started the manual `tablekeeper` container on this port, stop it first with `docker stop tablekeeper`.
+
+| Account | Email | Password |
+| --- | --- | --- |
+| Demo manager | `manager@tablekeeper.example` | `TablekeeperDemo2026!` |
+| Guest | Create an account using **Sign up** | Choose your own password |
+
+Sign in as the manager to use **Service recovery**. Create a guest reservation first to demonstrate a seating move. This is local sample data, not a connection to a real restaurant. The accounts and restaurant are supplied in [the fixture](stage-4/demo/multi-day-demo.json).
+
+Check loading with `docker compose logs demo-data`. Stop the demo with `docker compose down`. State is temporary; a new empty container receives the fixture again. If port 8104 is busy, set `TABLEKEEPER_PORT` to another free port before running Compose.
+
+### Empty service for evaluation
+
+The standalone service starts empty, as required by the challenge. To run it without demo data:
 
 ```sh
 docker build -t tablekeeper ./stage-4
@@ -28,9 +49,9 @@ docker run --rm --name tablekeeper -p 127.0.0.1:8104:8104 -e PORT=8104 tablekeep
 
 This changes the displayed log only; the container keeps the binding required for Docker port forwarding. Stop this launch with `docker stop tablekeeper` from another terminal.
 
-The service starts with empty state. For a usable, clearly labelled restaurant open on all seven weekdays, follow [the opt-in Stage 4 demo instructions](stage-4/demo/README.md) in a separate disposable container. Sign up normally, search availability, select a table/time, reserve, then retrieve or cancel using the confirmation reference. Booking days follow actual restaurant hours; no weekday is hard-coded.
+For manual fixture loading, follow [the opt-in Stage 4 demo instructions](stage-4/demo/README.md). Search availability, select a table/time, reserve, then retrieve or cancel using the confirmation reference. Booking days follow actual restaurant hours; no weekday is hard-coded.
 
-Manager permissions come from the service's configured membership. The public signup form does not create managers, and the simple multi-day demo seeds no manager account. Policy publication and service recovery require a fixture with an authorized manager. Independent checks exercise those flows using isolated test fixtures; no public role picker or invented dashboard metrics bypass authorization.
+Manager permissions come from the service's configured membership. The public signup form does not create managers. The opt-in [demo fixture](stage-4/demo/README.md) now includes **Nobu (Demo)** and an explicitly authorized local-demo manager: email `manager@tablekeeper.example`, password `TablekeeperDemo2026!`. These sample credentials work only after loading the fixture. Policy publication and service recovery use server-enforced authorization; no public role picker or invented dashboard metrics bypass it.
 
 State is ephemeral across container restarts. The API supports atomic export/import across these snapshots, preserving sessions, identifiers, original retry receipts and histories. Test reset/import controls are intended for disposable evaluation environments.
 

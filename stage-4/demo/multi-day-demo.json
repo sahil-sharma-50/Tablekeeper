@@ -1,9 +1,17 @@
 {
-  "users": [],
+  "users": [
+    {
+      "id": "demo_manager",
+      "email": "manager@tablekeeper.example",
+      "password": "TablekeeperDemo2026!",
+      "display_name": "Demo Manager"
+    }
+  ],
   "restaurants": [
     {
       "id": "r_demo_week",
-      "name": "DEMO: Weeklong Tablehouse",
+      "name": "Nobu (Demo)",
+      "manager_user_ids": ["demo_manager"],
       "timezone": "Europe/Berlin",
       "slot_minutes": 30,
       "reservation_duration_minutes": 90,

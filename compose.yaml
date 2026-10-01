@@ -1,0 +1,38 @@
+# Optional local demo. Official evaluation builds each stage's Dockerfile directly.
+services:
+  tablekeeper:
+    build: ./stage-4
+    image: tablekeeper
+    ports:
+      - "127.0.0.1:${TABLEKEEPER_PORT:-8104}:8104"
+    environment:
+      PORT: "8104"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8104/health', timeout=2)"]
+      interval: 1s
+      timeout: 3s
+      retries: 30
+  demo-data:
+    image: tablekeeper
+    depends_on:
+      tablekeeper:
+        condition: service_healthy
+    volumes:
+      - ./stage-4/demo/multi-day-demo.json:/demo.json:ro
+    entrypoint:
+      - python
+      - -c
+      - |
+        import json
+        import urllib.request
+        base = 'http://tablekeeper:8104'
+        with urllib.request.urlopen(base + '/_test/export', timeout=10) as response:
+            state = json.load(response)['state']
+        if any(state[key] for key in ('users', 'restaurants', 'reservations', 'tokens', 'receipts', 'series', 'plans')):
+            print('Existing data preserved; demo loading skipped.')
+        else:
+            with open('/demo.json', 'rb') as fixture:
+                request = urllib.request.Request(base + '/_test/reset', data=fixture.read(), headers={'Content-Type': 'application/json'}, method='POST')
+            with urllib.request.urlopen(request, timeout=10) as response:
+                assert response.status == 204
+            print('Nobu (Demo) and its authorized demo manager are ready.')
