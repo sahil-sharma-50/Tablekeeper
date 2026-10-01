@@ -41,3 +41,5 @@ Desktop.ini
 /presentation/
 
 .vercel/
+/.agents/
+/skills-lock.json

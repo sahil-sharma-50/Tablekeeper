@@ -1,5 +1,7 @@
 .git/
 .vercel/
+.agents/
+skills-lock.json
 .venv*/
 .env*
 output/

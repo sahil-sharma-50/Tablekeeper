@@ -6,7 +6,7 @@ All four stage snapshots are included. The factory's independent QA accepted eac
 
 ![Tablekeeper — restaurant reservations built by a four-agent BAND factory](assets/cover_image.png)
 
-**Live demo:** [tablekeeper-band.vercel.app](https://tablekeeper-band.vercel.app/). [Vercel deployment instructions](vercel/README.md) describe the separate hosting adapter, shared database and seeded demo manager.
+**Live demo:** [tablekeeper-band.vercel.app](https://tablekeeper-band.vercel.app/). The hosted demo includes **Nobu (Demo)** and the manager credentials below. [Vercel deployment instructions](vercel/README.md) describe the separate hosting adapter and shared database.
 
 ## Start the final product
 
