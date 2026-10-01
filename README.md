@@ -13,11 +13,20 @@ Prerequisite: Docker with internet access for image builds. No Node or Python in
 From the repository root:
 
 ```sh
-docker build -t tablekeeper-stage-4 ./stage-4
-docker run --rm --name tablekeeper-stage-4 -p 127.0.0.1:8104:8104 -e PORT=8104 tablekeeper-stage-4
+docker build -t tablekeeper ./stage-4
+docker run --rm --name tablekeeper -p 127.0.0.1:8104:8104 -e PORT=8104 tablekeeper
 ```
 
-Open **http://localhost:8104/**. Health is available at `/health`. Stop with Ctrl+C. Each snapshot also has its own [RUN.md](stage-4/RUN.md); run snapshots separately because Stages 1 and 2 share a documented host port.
+Open **http://localhost:8104/** or **http://127.0.0.1:8104/**. Health is available at `/health`. Stop with Ctrl+C or `docker stop tablekeeper`. Each snapshot also has its own [RUN.md](stage-4/RUN.md); run snapshots separately because Stages 1 and 2 share a documented host port.
+
+Uvicorn logs `0.0.0.0` because it listens on all interfaces inside the container. Docker forwards the port to your computer's loopback address. Use `localhost` or `127.0.0.1` in your browser. To display `localhost` in the terminal too, use this **PowerShell** command instead of the `docker run` command above:
+
+```powershell
+docker run --rm --name tablekeeper -p 127.0.0.1:8104:8104 -e PORT=8104 tablekeeper 2>&1 |
+    ForEach-Object { $_.ToString().Replace('http://0.0.0.0:8104', 'http://localhost:8104') }
+```
+
+This changes the displayed log only; the container keeps the binding required for Docker port forwarding. Stop this launch with `docker stop tablekeeper` from another terminal.
 
 The service starts with empty state. For a usable, clearly labelled restaurant open on all seven weekdays, follow [the opt-in Stage 4 demo instructions](stage-4/demo/README.md) in a separate disposable container. Sign up normally, search availability, select a table/time, reserve, then retrieve or cancel using the confirmation reference. Booking days follow actual restaurant hours; no weekday is hard-coded.
 
