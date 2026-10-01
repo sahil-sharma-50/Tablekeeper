@@ -1,8 +1,10 @@
 # Tablekeeper
 
-A restaurant reservation service built by four coding-agent seats collaborating in BAND Desktop for the **WeAreDevelopers x BAND Dark Factory hackathon**, Tablekeeper track.
+A restaurant reservation service built by four coding-agent seats collaborating in BAND Desktop.
 
-Participant: **Sahil Sharma**. All four stage snapshots are included. The factory's independent QA accepted each snapshot before it was extended into the next stage. The shipped checks are partial, directional evidence; their results do not guarantee the organizers' hidden-test outcome.
+All four stage snapshots are included. The factory's independent QA accepted each snapshot before it was extended into the next stage. The shipped checks are partial, directional evidence; their results do not guarantee the organizers' hidden-test outcome.
+
+![Tablekeeper — restaurant reservations built by a four-agent BAND factory](assets/cover_image.png)
 
 ## Start the final product
 
@@ -21,7 +23,7 @@ The service starts with empty state. For a usable, clearly labelled restaurant o
 
 Manager permissions come from the service's configured membership. The public signup form does not create managers, and the simple multi-day demo seeds no manager account. Policy publication and service recovery require a fixture with an authorized manager. Independent checks exercise those flows using isolated test fixtures; no public role picker or invented dashboard metrics bypass authorization.
 
-State is ephemeral across container restarts. The API supports atomic export/import across these snapshots, preserving sessions, identifiers, original retry receipts and histories. Test reset/import controls are intended for disposable evaluation environments; this entry is a local hackathon service, not an internet-hardened production deployment.
+State is ephemeral across container restarts. The API supports atomic export/import across these snapshots, preserving sessions, identifiers, original retry receipts and histories. Test reset/import controls are intended for disposable evaluation environments.
 
 ## What each snapshot contains
 
