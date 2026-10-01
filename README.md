@@ -64,4 +64,6 @@ Use a new output directory each time. Isolated evaluation supplies 2 CPU and 2 G
 
 Approved illustrations were generated with OpenAI imagegen. Source Sans 3 is supplied under SIL OFL, and Tabler icons under MIT; retain the notices and license files bundled with each frontend's assets. See [asset provenance](stage-4/web/public/assets/NOTICE.md).
 
+The project's original code and documentation are supplied under the [MIT License](LICENSE). Bundled third-party assets retain their accompanying licenses and notices.
+
 The room export, mandate metadata and these documentation files were packaged after implementation. Documentation was drafted with Codex assistance from recorded evidence; the participant must review and take responsibility for the final narrative. Public GitHub publication, presentation/video and event submission are separate participant actions. The video must show the actual BAND room, a handoff and the resulting product.
