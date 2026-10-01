@@ -1,6 +1,6 @@
 # Tablekeeper acceptance coverage
 
-Recorded commands and machine paths below describe the original autonomous run before repository relocation. They are retained as evidence, not current directory requirements. For a new clone, use [README.md](README.md) and the portable run/evidence protocol at the end of this file.
+Recorded commands and machine paths below describe the original autonomous run before repository relocation. They are retained as evidence, not current directory requirements. Temporary ignored clones referenced in recorded commands are not shipped; their reports remain under `evidence/`. For a new clone, use [README.md](README.md) and the portable run/evidence protocol at the end of this file.
 
 ## Authority and current evidence
 
