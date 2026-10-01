@@ -1,14 +1,14 @@
-# Opt-in multi-day demonstration
+# Opt-in Stage 3 multi-day demonstration
 
-`multi-day-demo.json` is a labeled demonstration fixture. It is not loaded automatically and has no seeded users or reservations. Visitors can create their own account through the normal sign-up page.
+This stage uses its own labeled fixture at `stage-3/demo/multi-day-demo.json`. It is not loaded automatically. It contains no users or reservations; the demo restaurant is open every day from 17:00 to 22:00 Europe/Berlin time, with three single tables and one declared pair. Sign up normally for visitor flows. No manager account is seeded, and signing up does not grant manager access.
 
-Run it in a disposable container on port 8103 from the repository root:
+From the repository root, build and run this stage in a disposable, loopback-only container. Port 8105 was free when this runbook was prepared; if it is occupied, substitute another free host port in both commands and the URL.
 
 ```powershell
-docker build -t tablekeeper-stage-2 .\stage-2
-docker run --rm -d --name tablekeeper-demo -p 8103:8080 tablekeeper-stage-2
-$body = Get-Content -Raw .\stage-2\demo\multi-day-demo.json
-Invoke-RestMethod -Method Post -Uri http://localhost:8103/_test/reset -ContentType 'application/json' -Body $body
+docker build -t tablekeeper-stage-3-demo .\stage-3
+docker run --rm -d --name tablekeeper-stage-3-demo -p 127.0.0.1:8105:8080 tablekeeper-stage-3-demo
+$body = Get-Content -Raw .\stage-3\demo\multi-day-demo.json
+Invoke-RestMethod -Method Post -Uri http://127.0.0.1:8105/_test/reset -ContentType 'application/json' -Body $body
 ```
 
-The reset replaces all state in that container. Never send it to the shared preview or QA service. Open `http://localhost:8103/`, choose a date, and sign up normally. The restaurant is open 17:00 to 22:00 every weekday in Europe/Berlin time; it has three single tables and one declared two-table combination. Stop the disposable container with `docker stop tablekeeper-demo`.
+Open `http://localhost:8105/`. The reset replaces all data in this disposable container only; never send it to a shared preview or QA service. Stop it with `docker stop tablekeeper-stage-3-demo`; Docker removes it automatically.
