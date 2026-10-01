@@ -3,6 +3,7 @@ services:
   tablekeeper:
     build: ./stage-4
     image: tablekeeper
+    pull_policy: build
     ports:
       - "127.0.0.1:${TABLEKEEPER_PORT:-8104}:8104"
     environment:
@@ -14,6 +15,7 @@ services:
       retries: 30
   demo-data:
     image: tablekeeper
+    pull_policy: never
     depends_on:
       tablekeeper:
         condition: service_healthy
