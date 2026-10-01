@@ -1,0 +1,37 @@
+$ docker run --rm --network df-run-fc8db765eae64014a57930e554dec2f9 -v /mnt/c/Users/sahil/Desktop/BAND - Dark Factory/challenge:/work:ro -v /mnt/c/Users/sahil/Desktop/BAND - Dark Factory/submission/tablekeeper-v4/evidence/final-efcfd4b-01/stage-3:/out -e PYTHONDONTWRITEBYTECODE=1 -e PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 -e COLUMNS=200 -w /work df-harness-runner python -m pytest tablekeeper/test/stage_4 --base-url http://df-svc-f1ac83a65045:8080 -p harness.plugin --rootdir tablekeeper/test -q -x --previous-base-url http://df-svc-f1ac83a65045:8080 --harness-summary /out/stage-4.counts.json
+
+....F
+=============================================================================================== FAILURES ===============================================================================================
+________________________________________________________________________________ test_series_clock_time_can_be_changed _________________________________________________________________________________
+
+world = namespace(fixture={'users': [{'id': 'u_ada', 'email': '[redacted-email]', 'password': 'correct horse', 'display_name': ...', date='2026-10-08', ada=<harness.http.Api object at 0x76de073f9b80>, bob=<harness.http.Api object at 0x76de0746b230>)
+book = <function book.<locals>._book at 0x76de073132e0>
+
+    def test_series_clock_time_can_be_changed(world, book):
+        from harness.http import new_key
+        anchor = book().json()
+        made = world.ada.post('/series', json=dict(anchor_reference=anchor['reference'],
+            count=2, interval_weeks=1), idempotency_key=new_key())
+        assert made.status_code == 201
+        response = world.ada.post('/series/' + made.json()['series_id'] + '/amend',
+            json=dict(expected_revision=1, from_index=0, local_time='20:00'), idempotency_key=new_key())
+>       assert response.status_code == 201
+E       assert 404 == 201
+E        +  where 404 = <Response [404 Not Found]>.status_code
+
+tablekeeper/test/stage_4/test_sample.py:90: AssertionError
+=========================================================================================== warnings summary ===========================================================================================
+../usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:469
+  /usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:469: PytestCacheWarning: cache could not write path /work/tablekeeper/test/.pytest_cache/v/cache/nodeids: [Errno 30] Read-only file system: '/work/tablekeeper/test/.pytest_cache/v/cache/nodeids'
+    config.cache.set("cache/nodeids", sorted(self.cached_nodeids))
+
+../usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:423
+  /usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:423: PytestCacheWarning: cache could not write path /work/tablekeeper/test/.pytest_cache/v/cache/lastfailed: [Errno 30] Read-only file system: '/work/tablekeeper/test/.pytest_cache/v/cache/lastfailed'
+    config.cache.set("cache/lastfailed", self.lastfailed)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================================================================================= short test summary info ========================================================================================
+FAILED tablekeeper/test/stage_4/test_sample.py::test_series_clock_time_can_be_changed - assert 404 == 201
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+1 failed, 4 passed, 2 warnings in 0.94s
+
