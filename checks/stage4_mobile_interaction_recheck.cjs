@@ -58,9 +58,11 @@ function errorLine(error) {
 
 module.exports = async function stage4MobileInteractionRecheck(page, zoom) {
   const base = new URL(page.url()).origin;
+  const exactSource = process.env.QA_SOURCE_SHA;
+  assert.match(exactSource || "", /^[0-9a-f]{40}$/, "QA_SOURCE_SHA must identify the checked commit");
   const baseline = await fullScenario(page, zoom);
   const failures = [];
-  const result = { exactSource: "ef76b375e4483da8c46f54220b2ef687c3a9b9e8",
+  const result = { exactSource,
     baselinePassed: baseline.ok,
     nativeLayout: baseline.layoutMatrix.map((sample) => ({
       label: sample.label, tabZoom: sample.tabZoom, cssViewport: sample.cssViewport,
